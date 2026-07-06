@@ -1,0 +1,39 @@
+{
+  "name": "corak",
+  "version": "1.0.0",
+  "description": "oyunum oyun ",
+  "keywords": [
+    "electron",
+    "firebase",
+    "desktop-app",
+    "cross-platform",
+    "realtime"
+  ],
+  "homepage": "https://github.com/siber6750/corak_bahce#readme",
+  "bugs": {
+    "url": "https://github.com/siber6750/corak_bahce/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siber6750/corak_bahce.git"
+  },
+  "license": "MIT",
+  "author": "siber6750",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
+    "express": "^5.2.1",
+    "firebase": "^12.15.0"
+  },
+  "allowScripts": {
+    "@firebase/util@1.15.1": true,
+    "protobufjs@7.6.5": true
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

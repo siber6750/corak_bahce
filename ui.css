@@ -1,0 +1,81 @@
+* { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Fredoka', sans-serif; background: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; color: #fff; touch-action: none; }
+#gameContainer { position: relative; width: 100vw; height: 100vh; max-width: 900px; max-height: 600px; overflow: hidden; background: radial-gradient(circle at center, #2d2d44 0%, #12122a 100%); }
+canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; cursor: default; }
+.ui-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+.ui-layer.active { pointer-events: auto; }
+.hidden { display: none !important; }
+.top-bar { position: absolute; top: 0; left: 0; right: 0; padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
+.profile-card { background: none; padding: 8px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.avatar { width: 40px; height: 40px; background: #fbbf24; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+.profile-info h3 { font-family: 'Lilita One', cursive; font-size: 18px; line-height: 1; text-shadow: 2px 2px 0 #000; display: flex; align-items: center; }
+.profile-info p { font-size: 12px; color: #fbbf24; text-shadow: 1px 1px 0 #000; }
+.currencies { display: flex; gap: 10px; }
+.currency-box { background: none; padding: 8px 15px; display: flex; align-items: center; gap: 8px; }
+.currency-val { font-family: 'Lilita One', cursive; font-size: 18px; text-shadow: 2px 2px 0 #000; }
+.left-menu { position: absolute; left: 20px; top: 100px; display: flex; flex-direction: column; gap: 15px; }
+.menu-btn { width: 60px; height: 60px; border: 3px solid; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; transition: 0.1s; }
+.menu-btn:active { transform: translateY(4px) !important; box-shadow: 0 0 0 !important; }
+.menu-btn.shop { background: #ef4444; border-color: #b91c1c; box-shadow: 0 4px 0 #b91c1c; }
+.menu-btn.brawlers { background: #a855f7; border-color: #6b21a8; box-shadow: 0 4px 0 #6b21a8; }
+.menu-btn.friends { background: #3b82f6; border-color: #1d4ed8; box-shadow: 0 4px 0 #1d4ed8; }
+.menu-btn.account { background: #10b981; border-color: #047857; box-shadow: 0 4px 0 #047857; }
+.center-stage { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%); text-align: center; pointer-events: none; }
+.game-logo { font-family: 'Lilita One', cursive; font-size: 80px; color: #facc15; text-shadow: 0 0 20px rgba(250,204,21,0.5), 4px 4px 0 #b45309, 8px 8px 0 #1a1a2e; letter-spacing: 5px; margin-bottom: 20px; animation: pulse 2s infinite ease-in-out; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.character-display { width: 180px; height: 180px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 100px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%); }
+.bottom-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 30px; }
+.mode-info { background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 10px; border: 2px solid #555; text-align: center; cursor: pointer; }
+.mode-info:hover { border-color: #facc15; }
+.mode-info h3 { font-family: 'Lilita One', cursive; font-size: 20px; color: #fff; text-shadow: 1px 1px 0 #000; }
+.mode-info p { font-size: 12px; color: #ccc; text-shadow: 1px 1px 0 #000; }
+.btn-play { background: #facc15; border: 4px solid #b45309; width: 180px; height: 100px; border-radius: 20px; font-family: 'Lilita One', cursive; font-size: 36px; color: #fff; text-shadow: 2px 2px 0 rgba(0,0,0,0.5); cursor: pointer; box-shadow: 0 6px 0 #b45309; transition: 0.1s; }
+.btn-play:active { transform: translateY(4px); box-shadow: 0 2px 0 #b45309; }
+.overlay { position: absolute; inset: 0; background: rgba(5,10,5,0.9); backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; padding: 20px; overflow-y: auto; }
+.overlay h2 { font-family: 'Lilita One', cursive; font-size: 40px; color: #facc15; margin-bottom: 20px; text-shadow: 2px 2px 0 #000; text-align:center; }
+.shop-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+.tab-btn { background: #333; border: 2px solid #555; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 14px; }
+.tab-btn.active { background: #facc15; color: #000; border-color: #facc15; }
+.tab-btn.btc-tab.active { background: #f7931a; color: #000; border-color: #f7931a; }
+.grid-shop { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 700px; max-height: 50vh; overflow-y: auto; padding-right: 10px; }
+.shop-card { background: #222; border: 2px solid #444; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
+.shop-card:hover { border-color: #facc15; transform: translateY(-2px); }
+.shop-card.owned { border-color: #22c55e; }
+.shop-card.selected { border-color: #facc15; box-shadow: 0 0 15px #facc15; }
+.shop-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.shop-info { flex: 1; }
+.shop-name { font-family: 'Lilita One', cursive; font-size: 18px; }
+.shop-desc { font-size: 12px; color: #aaa; }
+.shop-price { font-family: 'Lilita One', cursive; font-size: 16px; color: #facc15; }
+.close-btn { margin-top: 20px; background: #ef4444; border: none; padding: 10px 30px; color: #fff; font-family: 'Lilita One', cursive; font-size: 20px; border-radius: 10px; cursor:pointer; box-shadow: 0 4px 0 #b91c1c; }
+.close-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #b91c1c; }
+#hud { position: absolute; top: 0; left: 0; right: 0; padding: 15px; display: none; justify-content: space-between; pointer-events: none; z-index: 20; }
+.hud-card { background: none; padding: 5px 10px; font-size: 14px; font-weight: 600; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; }
+.hud-card .val { font-family: 'Lilita One', cursive; }
+#controlsHint { position: absolute; bottom: 10px; left: 10px; background: none; padding: 5px 10px; font-size: 12px; color: #ccc; text-shadow: 1px 1px 0 #000; z-index: 20; display: none; }
+.pause-btn { background: #22c55e; border: none; padding: 15px 40px; color: #fff; font-family: 'Lilita One', cursive; font-size: 24px; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 0 #15803d; margin: 10px; width: 300px; }
+.pause-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #15803d; }
+.pause-btn.restart { background: #f97316; box-shadow: 0 6px 0 #b45309; }
+.pause-btn.quit { background: #ef4444; box-shadow: 0 6px 0 #b91c1c; }
+.form-box { background: #222; padding: 30px; border-radius: 12px; border: 2px solid #444; width: 350px; display: flex; flex-direction: column; gap: 15px; max-width: 90%; }
+.form-input { padding: 12px; border-radius: 8px; border: 2px solid #555; background: #111; color: #fff; font-size: 16px; }
+.form-btn { background: #3b82f6; border: none; padding: 12px; color: #fff; font-family: 'Lilita One', cursive; font-size: 18px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 0 #1d4ed8; }
+.form-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #1d4ed8; }
+.form-btn.green { background: #22c55e; box-shadow: 0 4px 0 #15803d; }
+.admin-badge { color: #fff; font-size: 12px; background: #dc2626; padding: 2px 6px; border-radius: 4px; margin-left: 8px; text-shadow: none; box-shadow: 0 0 10px rgba(220, 38, 38, 0.8); animation: adminPulse 1.5s infinite; }
+.admin-badge.tier10 { background: #facc15; color: #000; box-shadow: 0 0 15px rgba(250, 204, 21, 1); }
+@keyframes adminPulse { 0% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.5); } 50% { box-shadow: 0 0 15px rgba(220, 38, 38, 1); } 100% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.5); } }
+#mobileControls { position: absolute; bottom: 20px; right: 20px; display: none; flex-direction: column; align-items: flex-end; gap: 15px; z-index: 25; pointer-events: none; }
+.m-top { display: flex; gap: 15px; pointer-events: auto; }
+.m-bottom { display: flex; gap: 15px; pointer-events: auto; }
+.m-btn { width: 55px; height: 55px; background: rgba(15, 15, 25, 0.7); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); transition: transform 0.1s, background 0.2s, border-color 0.2s; }
+.m-btn svg { width: 28px; height: 28px; fill: #fff; transition: fill 0.2s; }
+.m-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.2); border-color: #facc15; }
+.m-btn:active svg { fill: #facc15; }
+.m-btn#btnPause svg { fill: #ef4444; } .m-btn#btnPause:active svg { fill: #fff; }
+.m-btn#btnShop svg { fill: #facc15; } .m-btn#btnShop:active svg { fill: #fff; }
+.m-btn#btnReload svg { fill: #f97316; } .m-btn#btnReload:active svg { fill: #fff; }
+.m-btn#btnDash svg { fill: #3b82f6; } .m-btn#btnDash:active svg { fill: #fff; }
+@media (hover: none) and (pointer: coarse) { #mobileControls { display: flex; } #controlsHint { display: none !important; } canvas { cursor: none; } }
+@media (max-width: 600px) { .game-logo { font-size: 50px; } .character-display { width: 120px; height: 120px; font-size: 60px; } .bottom-bar { gap: 10px; } .btn-play { width: 100px; height: 60px; font-size: 20px; } .menu-btn { width: 50px; height: 50px; font-size: 22px; } .form-box { width: 100%; padding: 15px; } .grid-shop { grid-template-columns: 1fr; } }
+::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #111; } ::-webkit-scrollbar-thumb { background: #facc15; border-radius: 4px; }

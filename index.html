@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <!-- ELECTRON CSP AYARI: Firebase'in script ve WebSocket bağlantılarına izin verir -->
-<meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap:; style-src * 'self' 'unsafe-inline'; script-src * 'self' 'unsafe-inline' 'unsafe-eval'; connect-src *">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.googleapis.com; connect-src 'self' wss://*.firebaseio.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ÇORAK</title>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
@@ -13,29 +13,36 @@
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
   body { font-family: 'Fredoka', sans-serif; background: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; color: #fff; touch-action: none; }
   #gameContainer { position: relative; width: 100vw; height: 100vh; max-width: 900px; max-height: 600px; overflow: hidden; background: radial-gradient(circle at center, #2d2d44 0%, #12122a 100%); }
-  canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; cursor: default; }
+  canvas#game { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; cursor: default; }
   .ui-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
   .ui-layer.active { pointer-events: auto; }
   .hidden { display: none !important; }
   .top-bar { position: absolute; top: 0; left: 0; right: 0; padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
   .profile-card { background: none; padding: 8px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  .avatar { width: 40px; height: 40px; background: #fbbf24; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-  .profile-info h3 { font-family: 'Lilita One', cursive; font-size: 18px; line-height: 1; text-shadow: 2px 2px 0 #000; display: flex; align-items: center; }
+  .avatar { width: 42px; height: 42px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #fbbf24; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .avatar svg { width: 24px; height: 24px; fill: #fbbf24; }
+  .profile-info h3 { font-family: 'Lilita One', cursive; font-size: 18px; line-height: 1.2; text-shadow: 2px 2px 0 #000; display: flex; align-items: center; }
   .profile-info p { font-size: 12px; color: #fbbf24; text-shadow: 1px 1px 0 #000; }
   .currencies { display: flex; gap: 10px; }
-  .currency-box { background: none; padding: 8px 15px; display: flex; align-items: center; gap: 8px; }
+  .currency-box { background: rgba(0,0,0,0.35); border: 2px solid rgba(255,255,255,0.12); padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-radius: 10px; }
+  .currency-box svg { width: 18px; height: 18px; }
+  .currency-box .btc-sym { font-family: 'Lilita One'; font-size: 18px; color: #f7931a; }
   .currency-val { font-family: 'Lilita One', cursive; font-size: 18px; text-shadow: 2px 2px 0 #000; }
   .left-menu { position: absolute; left: 20px; top: 100px; display: flex; flex-direction: column; gap: 15px; }
-  .menu-btn { width: 60px; height: 60px; border: 3px solid; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; transition: 0.1s; }
+  .menu-btn { width: 60px; height: 60px; border: 3px solid; border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
+  .menu-btn svg { width: 28px; height: 28px; fill: #fff; }
+  .menu-btn:hover { filter: brightness(1.1); }
   .menu-btn:active { transform: translateY(4px) !important; box-shadow: 0 0 0 !important; }
   .menu-btn.shop { background: #ef4444; border-color: #b91c1c; box-shadow: 0 4px 0 #b91c1c; }
   .menu-btn.brawlers { background: #a855f7; border-color: #6b21a8; box-shadow: 0 4px 0 #6b21a8; }
   .menu-btn.friends { background: #3b82f6; border-color: #1d4ed8; box-shadow: 0 4px 0 #1d4ed8; }
   .menu-btn.account { background: #10b981; border-color: #047857; box-shadow: 0 4px 0 #047857; }
   .center-stage { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%); text-align: center; pointer-events: none; }
-  .game-logo { font-family: 'Lilita One', cursive; font-size: 80px; color: #facc15; text-shadow: 0 0 20px rgba(250,204,21,0.5), 4px 4px 0 #b45309, 8px 8px 0 #1a1a2e; letter-spacing: 5px; margin-bottom: 20px; animation: pulse 2s infinite ease-in-out; }
-  @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-  .character-display { width: 180px; height: 180px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 100px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%); }
+  .game-logo { font-family: 'Lilita One', cursive; font-size: 80px; color: #facc15; text-shadow: 0 0 20px rgba(250,204,21,0.4), 4px 4px 0 #b45309, 8px 8px 0 #1a1a2e; letter-spacing: 5px; margin-bottom: 10px; animation: pulse 2.4s infinite ease-in-out; }
+  @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+  .tagline { font-size: 14px; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; text-shadow: 1px 1px 0 #000; margin-bottom: 12px; }
+  .character-display { width: 180px; height: 180px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(0,0,0,0) 70%); }
+  #charPreview { width: 180px; height: 180px; }
   .bottom-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 30px; }
   .mode-info { background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 10px; border: 2px solid #555; text-align: center; cursor: pointer; }
   .mode-info:hover { border-color: #facc15; }
@@ -44,72 +51,80 @@
   .btn-play { background: #facc15; border: 4px solid #b45309; width: 180px; height: 100px; border-radius: 20px; font-family: 'Lilita One', cursive; font-size: 36px; color: #fff; text-shadow: 2px 2px 0 rgba(0,0,0,0.5); cursor: pointer; box-shadow: 0 6px 0 #b45309; transition: 0.1s; }
   .btn-play:active { transform: translateY(4px); box-shadow: 0 2px 0 #b45309; }
   .overlay { position: absolute; inset: 0; background: rgba(5,10,5,0.9); backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; padding: 20px; overflow-y: auto; }
-  .overlay h2 { font-family: 'Lilita One', cursive; font-size: 40px; color: #facc15; margin-bottom: 20px; text-shadow: 2px 2px 0 #000; text-align:center; }
+  .overlay h2 { font-family: 'Lilita One', cursive; font-size: 38px; color: #facc15; margin-bottom: 6px; text-shadow: 2px 2px 0 #000; text-align: center; }
+  .overlay .sub { font-size: 13px; color: #94a3b8; margin-bottom: 18px; text-align: center; }
   .shop-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
   .tab-btn { background: #333; border: 2px solid #555; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 14px; }
   .tab-btn.active { background: #facc15; color: #000; border-color: #facc15; }
-  .tab-btn.btc-tab.active { background: #f7931a; color: #000; border-color: #f7931a; }
   .grid-shop { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 700px; max-height: 50vh; overflow-y: auto; padding-right: 10px; }
   .shop-card { background: #222; border: 2px solid #444; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
   .shop-card:hover { border-color: #facc15; transform: translateY(-2px); }
   .shop-card.owned { border-color: #22c55e; }
-  .shop-card.selected { border-color: #facc15; box-shadow: 0 0 15px #facc15; }
-  .shop-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
-  .shop-info { flex: 1; }
+  .shop-card.selected { border-color: #facc15; box-shadow: 0 0 15px rgba(250,204,21,0.6); }
+  .shop-icon { width: 60px; height: 60px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,0.04); }
+  .shop-icon canvas { width: 56px; height: 56px; }
+  .shop-info { flex: 1; min-width: 0; }
   .shop-name { font-family: 'Lilita One', cursive; font-size: 18px; }
-  .shop-desc { font-size: 12px; color: #aaa; }
-  .shop-price { font-family: 'Lilita One', cursive; font-size: 16px; color: #facc15; }
-  .close-btn { margin-top: 20px; background: #ef4444; border: none; padding: 10px 30px; color: #fff; font-family: 'Lilita One', cursive; font-size: 20px; border-radius: 10px; cursor:pointer; box-shadow: 0 4px 0 #b91c1c; }
+  .shop-desc { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .shop-stat { font-size: 11px; color: #7dd3fc; margin-top: 3px; }
+  .shop-price { font-family: 'Lilita One', cursive; font-size: 15px; color: #facc15; text-align: right; flex-shrink: 0; }
+  .pips { display: flex; gap: 4px; margin-top: 5px; justify-content: flex-end; }
+  .pip { width: 10px; height: 10px; border-radius: 50%; background: #3f3f3f; border: 1px solid #555; }
+  .pip.on { background: #facc15; border-color: #facc15; }
+  .close-btn { margin-top: 20px; background: #ef4444; border: none; padding: 10px 30px; color: #fff; font-family: 'Lilita One', cursive; font-size: 20px; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 0 #b91c1c; }
   .close-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #b91c1c; }
   #hud { position: absolute; top: 0; left: 0; right: 0; padding: 15px; display: none; justify-content: space-between; pointer-events: none; z-index: 20; }
-  .hud-card { background: none; padding: 5px 10px; font-size: 14px; font-weight: 600; text-shadow: 2px 2px 0 #000; margin-bottom: 5px; }
+  .hud-card { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 5px 10px; font-size: 14px; font-weight: 600; text-shadow: 1px 1px 0 #000; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; width: fit-content; }
+  .hud-card svg { width: 15px; height: 15px; flex-shrink: 0; }
   .hud-card .val { font-family: 'Lilita One', cursive; }
-  #controlsHint { position: absolute; bottom: 10px; left: 10px; background: none; padding: 5px 10px; font-size: 12px; color: #ccc; text-shadow: 1px 1px 0 #000; z-index: 20; display: none; }
+  #controlsHint { position: absolute; bottom: 10px; left: 10px; padding: 5px 10px; font-size: 12px; color: #ccc; text-shadow: 1px 1px 0 #000; z-index: 20; display: none; }
   .pause-btn { background: #22c55e; border: none; padding: 15px 40px; color: #fff; font-family: 'Lilita One', cursive; font-size: 24px; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 0 #15803d; margin: 10px; width: 300px; }
   .pause-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #15803d; }
   .pause-btn.restart { background: #f97316; box-shadow: 0 6px 0 #b45309; }
   .pause-btn.quit { background: #ef4444; box-shadow: 0 6px 0 #b91c1c; }
   .form-box { background: #222; padding: 30px; border-radius: 12px; border: 2px solid #444; width: 350px; display: flex; flex-direction: column; gap: 15px; max-width: 90%; }
-  .form-input { padding: 12px; border-radius: 8px; border: 2px solid #555; background: #111; color: #fff; font-size: 16px; }
+  .form-input { padding: 12px; border-radius: 8px; border: 2px solid #555; background: #111; color: #fff; font-size: 16px; font-family: 'Fredoka', sans-serif; }
   .form-btn { background: #3b82f6; border: none; padding: 12px; color: #fff; font-family: 'Lilita One', cursive; font-size: 18px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 0 #1d4ed8; }
   .form-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #1d4ed8; }
   .form-btn.green { background: #22c55e; box-shadow: 0 4px 0 #15803d; }
-  .admin-badge { color: #fff; font-size: 12px; background: #dc2626; padding: 2px 6px; border-radius: 4px; margin-left: 8px; text-shadow: none; box-shadow: 0 0 10px rgba(220, 38, 38, 0.8); animation: adminPulse 1.5s infinite; }
-  .admin-badge.tier10 { background: #facc15; color: #000; box-shadow: 0 0 15px rgba(250, 204, 21, 1); }
-  @keyframes adminPulse { 0% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.5); } 50% { box-shadow: 0 0 15px rgba(220, 38, 38, 1); } 100% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.5); } }
+  .admin-badge { color: #fff; font-size: 12px; background: #dc2626; padding: 2px 6px; border-radius: 4px; margin-left: 8px; text-shadow: none; box-shadow: 0 0 10px rgba(220,38,38,0.8); animation: adminPulse 1.5s infinite; }
+  .admin-badge.tier10 { background: #facc15; color: #000; box-shadow: 0 0 15px rgba(250,204,21,1); }
+  @keyframes adminPulse { 0% { box-shadow: 0 0 5px rgba(220,38,38,0.5); } 50% { box-shadow: 0 0 15px rgba(220,38,38,1); } 100% { box-shadow: 0 0 5px rgba(220,38,38,0.5); } }
   #mobileControls { position: absolute; bottom: 20px; right: 20px; display: none; flex-direction: column; align-items: flex-end; gap: 15px; z-index: 25; pointer-events: none; }
   .m-top { display: flex; gap: 15px; pointer-events: auto; }
   .m-bottom { display: flex; gap: 15px; pointer-events: auto; }
-  .m-btn { width: 55px; height: 55px; background: rgba(15, 15, 25, 0.7); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); transition: transform 0.1s, background 0.2s, border-color 0.2s; }
+  .m-btn { width: 55px; height: 55px; background: rgba(15,15,25,0.7); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); transition: transform 0.1s, background 0.2s, border-color 0.2s; }
   .m-btn svg { width: 28px; height: 28px; fill: #fff; transition: fill 0.2s; }
-  .m-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.2); border-color: #facc15; }
+  .m-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); border-color: #facc15; }
   .m-btn:active svg { fill: #facc15; }
   .m-btn#btnPause svg { fill: #ef4444; } .m-btn#btnPause:active svg { fill: #fff; }
   .m-btn#btnShop svg { fill: #facc15; } .m-btn#btnShop:active svg { fill: #fff; }
   .m-btn#btnReload svg { fill: #f97316; } .m-btn#btnReload:active svg { fill: #fff; }
   .m-btn#btnDash svg { fill: #3b82f6; } .m-btn#btnDash:active svg { fill: #fff; }
-  @media (hover: none) and (pointer: coarse) { #mobileControls { display: flex; } #controlsHint { display: none !important; } canvas { cursor: none; } }
-  @media (max-width: 600px) { .game-logo { font-size: 50px; } .character-display { width: 120px; height: 120px; font-size: 60px; } .bottom-bar { gap: 10px; } .btn-play { width: 100px; height: 60px; font-size: 20px; } .menu-btn { width: 50px; height: 50px; font-size: 22px; } .form-box { width: 100%; padding: 15px; } .grid-shop { grid-template-columns: 1fr; } }
+  @media (hover: none) and (pointer: coarse) { #mobileControls { display: flex; } #controlsHint { display: none !important; } canvas#game { cursor: none; } }
+  @media (max-width: 600px) { .game-logo { font-size: 50px; } .character-display, #charPreview { width: 120px; height: 120px; } .bottom-bar { gap: 10px; } .btn-play { width: 100px; height: 60px; font-size: 20px; } .menu-btn { width: 50px; height: 50px; } .menu-btn svg { width: 24px; height: 24px; } .form-box { width: 100%; padding: 15px; } .grid-shop { grid-template-columns: 1fr; } }
   ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #111; } ::-webkit-scrollbar-thumb { background: #facc15; border-radius: 4px; }
-  #serverStatus { position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%); font-family: 'Lilita One', cursive; font-size: 14px; color: #facc15; text-shadow: 1px 1px 0 #000; z-index: 15; }
+  #serverStatus { position: absolute; bottom: 34px; left: 16px; font-family: 'Lilita One', cursive; font-size: 13px; color: #facc15; text-shadow: 1px 1px 0 #000; z-index: 15; }
 </style>
 </head>
 <body>
 <div id="gameContainer">
   <canvas id="game" width="900" height="600"></canvas>
+
   <div id="hud">
     <div>
-      <div class="hud-card" style="color:#ef4444;">❤️ Can: <span class="val" id="hpText">100</span></div>
-      <div class="hud-card" style="color:#f97316;">🔫 Mermi: <span class="val" id="ammoText">5/5</span></div>
-      <div class="hud-card" style="color:#fff;">Silah: <span id="weaponName" style="font-family:'Lilita One';">Tabanca</span></div>
+      <div class="hud-card" style="color:#f87171;"><svg viewBox="0 0 24 24" fill="#f87171"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> <span class="val" id="hpText">100</span></div>
+      <div class="hud-card" style="color:#fbbf24;"><svg viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2c2.2 0 4 1.9 4 4.2V12H8V6.2C8 3.9 9.8 2 12 2zM8 13.5h8V16H8zM9.3 17.5h5.4L14 22h-4z"/></svg> <span class="val" id="ammoText">12/12</span></div>
+      <div class="hud-card" style="color:#e2e8f0;">Silah: <span id="weaponName" style="font-family:'Lilita One';">Tabanca</span></div>
+      <div class="hud-card" style="color:#4ade80; display:none;" id="carryBox">Taşıdığın: <span class="val" id="carryText">0</span></div>
     </div>
     <div style="text-align:right;">
-      <div class="hud-card" style="color:#facc15;">💰 Para: <span class="val" id="moneyText">0</span></div>
-      <div class="hud-card" style="color:#f7931a;">₿ BTC: <span class="val" id="btcText">0</span></div>
+      <div class="hud-card" style="color:#facc15;"><svg viewBox="0 0 24 24" fill="#facc15"><circle cx="12" cy="12" r="9"/><text x="12" y="16.5" font-size="12" font-weight="bold" text-anchor="middle" fill="#7c5a03">₺</text></svg> <span class="val" id="moneyText">0</span></div>
+      <div class="hud-card" style="color:#f7931a;"><span class="val" style="color:#f7931a;">₿</span> <span class="val" id="btcText">0</span></div>
       <div class="hud-card" style="color:#60a5fa;">Dalga: <span class="val" id="waveText">1</span></div>
     </div>
   </div>
-  <div id="controlsHint">WASD Hareket | MOUSE Ateş | R Şarjör | V Market | M Harita | ESC Duraklat</div>
+  <div id="controlsHint">WASD Hareket &nbsp;|&nbsp; Fare Ateş &nbsp;|&nbsp; R Şarjör &nbsp;|&nbsp; Q Silah Değiştir &nbsp;|&nbsp; Shift Atılma &nbsp;|&nbsp; V Market &nbsp;|&nbsp; M Harita &nbsp;|&nbsp; ESC Duraklat</div>
   <div id="serverStatus">Sunucu Durumu: Bekleniyor...</div>
   <div id="mobileControls">
     <div class="m-top"><button class="m-btn" id="btnPause" onclick="pauseGame()"><svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button></div>
@@ -123,46 +138,55 @@
   <div id="mainMenu" class="ui-layer active">
     <div class="top-bar">
       <div class="profile-card" onclick="playSound('click'); openOverlay('accountOverlay')">
-        <div class="avatar">🦸</div>
-        <div class="profile-info"><h3 id="playerName">Misafir</h3><p>SEVİYE 10</p></div>
+        <div class="avatar"><svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2 2.76 0 5 2.24 5 5v3c0 2.5-1.54 4.64-3.72 5.52L16 22H8l.72-4.48C6.54 16.64 5 14.5 5 12V9c0-2.76 2.24-5 5-5 0-1.1.9-2 2-2zm-4 8v2h8v-2H8z"/></svg></div>
+        <div class="profile-info"><h3 id="playerName">Misafir</h3><p id="playerLevel">HAYATTA KALAN</p></div>
       </div>
       <div class="currencies">
-        <div class="currency-box tl"><span>💰</span> <span class="currency-val" id="menuMoney">1000</span></div>
-        <div class="currency-box btc"><span>₿</span> <span class="currency-val" id="menuBtc">50</span></div>
+        <div class="currency-box"><svg viewBox="0 0 24 24" fill="#facc15"><circle cx="12" cy="12" r="9"/><text x="12" y="16.5" font-size="12" font-weight="bold" text-anchor="middle" fill="#7c5a03">₺</text></svg> <span class="currency-val" id="menuMoney">500</span></div>
+        <div class="currency-box"><span class="btc-sym">₿</span> <span class="currency-val" id="menuBtc">0</span></div>
       </div>
     </div>
     <div class="left-menu">
-      <div class="menu-btn shop" onclick="playSound('click'); openOverlay('shopOverlay')" title="Market">🛒</div>
-      <div class="menu-btn brawlers" onclick="playSound('click'); openOverlay('brawlerOverlay')" title="Savaşçılar">🦸</div>
-      <div class="menu-btn friends" onclick="playSound('click'); openOverlay('friendsOverlay')" title="Arkadaşlar & Oda">👥</div>
-      <div class="menu-btn account" onclick="playSound('click'); openOverlay('accountOverlay')" title="Hesap">🔒</div>
+      <div class="menu-btn shop" onclick="playSound('click'); openOverlay('shopOverlay')" title="Market"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg></div>
+      <div class="menu-btn brawlers" onclick="playSound('click'); openOverlay('brawlerOverlay')" title="Karakterler"><svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2 2.76 0 5 2.24 5 5v3c0 2.5-1.54 4.64-3.72 5.52L16 22H8l.72-4.48C6.54 16.64 5 14.5 5 12V9c0-2.76 2.24-5 5-5 0-1.1.9-2 2-2zm-4 8v2h8v-2H8z"/></svg></div>
+      <div class="menu-btn friends" onclick="playSound('click'); openOverlay('friendsOverlay')" title="Arkadaşlar & Oda"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+      <div class="menu-btn account" onclick="playSound('click'); openOverlay('accountOverlay')" title="Hesap"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm3 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div>
     </div>
-    <div class="center-stage"><div class="game-logo">ÇORAK</div><div class="character-display" id="charDisplay">⚔️</div></div>
+    <div class="center-stage">
+      <div class="game-logo">ÇORAK</div>
+      <div class="tagline">Toplandı · Cephanelik · Hayatta Kal</div>
+      <div class="character-display"><canvas id="charPreview" width="180" height="180"></canvas></div>
+    </div>
     <div class="bottom-bar">
       <div class="mode-info" onclick="playSound('click'); cycleMap()"><h3 id="mapName">Orman</h3><p>Harita Değiştir</p></div>
       <button class="btn-play" onclick="startGame()">OYNA</button>
-      <div class="mode-info"><h3>Zombi Avı</h3><p>Hayatta kal</p></div>
+      <div class="mode-info"><h3>Zombi Avı</h3><p>Hazınları Üsse Taşı</p></div>
     </div>
   </div>
+
   <div id="shopOverlay" class="ui-layer overlay hidden">
-    <h2>🛒 DÜKKAN</h2>
-    <div style="display:flex; gap:10px; margin-bottom:20px; text-shadow: 1px 1px 0 #000;">
-        <div style="color:#facc15; font-weight:700;">💰 <span id="shopMoney">0</span> TL</div>
-        <div style="color:#f7931a; font-weight:700;">₿ <span id="shopBtc">0</span> BTC</div>
+    <h2>MARKET</h2>
+    <div style="display:flex; gap:10px; margin-bottom:14px; text-shadow: 1px 1px 0 #000;">
+        <div style="color:#facc15; font-weight:700;"><svg viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:-2px;" fill="#facc15"><circle cx="12" cy="12" r="9"/><text x="12" y="16.5" font-size="12" font-weight="bold" text-anchor="middle" fill="#7c5a03">₺</text></svg> <span id="shopMoney">0</span> TL</div>
+        <div style="color:#f7931a; font-weight:700;">₿ <span id="shopBtc">0</span></div>
     </div>
     <div class="shop-tabs">
-      <button class="tab-btn active" data-tab="weapons" onclick="playSound('click'); switchTab('weapons')">🔫 Silahlar</button>
-      <button class="tab-btn" data-tab="skins" onclick="playSound('click'); switchTab('skins')">🎨 Kaplamalar</button>
-      <button class="tab-btn" data-tab="elixirs" onclick="playSound('click'); switchTab('elixirs')">🧪 İksirler</button>
-      <button class="tab-btn" data-tab="powers" onclick="playSound('click'); switchTab('powers')">💎 Süper Güçler</button>
-      <button class="tab-btn" data-tab="btc" onclick="playSound('click'); switchTab('btc')">₿ BTC Al</button>
+      <button class="tab-btn active" data-tab="weapons" onclick="playSound('click'); switchTab('weapons')">Silahlar</button>
+      <button class="tab-btn" data-tab="upgrades" onclick="playSound('click'); switchTab('upgrades')">Yükseltmeler</button>
     </div>
     <div class="grid-shop" id="shopGrid"></div>
     <button class="close-btn" onclick="playSound('click'); closeOverlay('shopOverlay')">KAPAT (V)</button>
   </div>
-  <div id="brawlerOverlay" class="ui-layer overlay hidden"><h2>🦸 SAVAŞÇILAR (50)</h2><div class="grid-shop" id="brawlerGrid"></div><button class="close-btn" onclick="playSound('click'); closeOverlay('brawlerOverlay')">KAPAT</button></div>
+
+  <div id="brawlerOverlay" class="ui-layer overlay hidden">
+    <h2>KARAKTERLER</h2>
+    <div class="sub">6 hayatta kalan · Altın Zombilerden topladığın BTC ile açılır</div>
+    <div class="grid-shop" id="brawlerGrid"></div>
+    <button class="close-btn" onclick="playSound('click'); closeOverlay('brawlerOverlay')">KAPAT</button>
+  </div>
+
   <div id="friendsOverlay" class="ui-layer overlay hidden">
-    <h2>👥 ONLINE OYNA</h2>
+    <h2>ONLINE OYNA</h2>
     <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 700px; justify-content: center;">
       <div class="form-box">
         <h3 style="text-align:center; color:#facc15; font-family:'Lilita One';">Oda Kur / Katıl</h3>
@@ -171,22 +195,23 @@
         <button class="form-btn" onclick="playSound('click'); createRoom()">YENİ ODA KUR</button>
         <p style="font-size:12px; color:#888; text-align:center;">Arkadaşın oda kodunu girince otomatik oyuna girer!</p>
       </div>
-      <div class="form-box"><h3 style="text-align:center; color:#facc15; font-family:'Lilita One';">Arkadaş Listesi</h3><div id="friendsList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;"><p style="font-size:16px; padding:10px; background:#333; border-radius:8px; margin-bottom:5px;">🟢 Ahmet (Oyunda)</p><p style="font-size:16px; padding:10px; background:#333; border-radius:8px; margin-bottom:5px;">🔴 Ayşe (Çevrimdışı)</p></div><div style="display:flex; gap:10px;"><input type="text" id="newFriendInput" class="form-input" placeholder="Arkadaş Adı" style="padding:8px; font-size:14px; flex:1;"><button class="form-btn green" style="padding:8px 15px; font-size:14px; box-shadow:0 3px 0 #15803d;" onclick="addFriendFromInput()">➕</button></div></div>
+      <div class="form-box"><h3 style="text-align:center; color:#facc15; font-family:'Lilita One';">Arkadaş Listesi</h3><div id="friendsList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;"><p style="font-size:16px; padding:10px; background:#333; border-radius:8px; margin-bottom:5px;">🟢 Ahmet (Oyunda)</p><p style="font-size:16px; padding:10px; background:#333; border-radius:8px; margin-bottom:5px;">🔴 Ayşe (Çevrimdışı)</p></div><div style="display:flex; gap:10px;"><input type="text" id="newFriendInput" class="form-input" placeholder="Arkadaş Adı" style="padding:8px; font-size:14px; flex:1;"><button class="form-btn green" style="padding:8px 15px; font-size:14px; box-shadow:0 3px 0 #15803d;" onclick="addFriendFromInput()">+</button></div></div>
     </div>
     <button class="close-btn" onclick="playSound('click'); closeOverlay('friendsOverlay')" style="margin-top:15px;">KAPAT</button>
   </div>
+
   <div id="accountOverlay" class="ui-layer overlay hidden">
-    <h2>🔒 HESABIM (FIREBASE)</h2>
+    <h2>HESABIM</h2>
     <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 700px; justify-content: center;">
       <div class="form-box"><h3 style="text-align:center; color:#facc15; font-family:'Lilita One';">Giriş Yap</h3><input type="email" class="form-input" id="loginEmail" placeholder="E-Posta"><input type="password" class="form-input" id="loginPass" placeholder="Şifre"><button class="form-btn green" onclick="login()">GİRİŞ YAP</button></div>
       <div class="form-box"><h3 style="text-align:center; color:#facc15; font-family:'Lilita One';">Kayıt Ol</h3><input type="email" class="form-input" id="regEmail" placeholder="E-Posta"><input type="password" class="form-input" id="regPass" placeholder="Şifre"><button class="form-btn" onclick="register()">KAYIT OL</button></div>
     </div>
     <button class="close-btn" onclick="playSound('click'); closeOverlay('accountOverlay')" style="margin-top:15px;">KAPAT</button>
   </div>
-  <div id="pauseOverlay" class="ui-layer overlay hidden"><h2>⏸️ DURAKLATILDI</h2><button class="pause-btn" onclick="resumeGame()">OYUNA DEVAM ET</button><button class="pause-btn restart" onclick="playSound('start'); startGame()">YENİDEN BAŞLA</button><button class="pause-btn quit" onclick="playSound('click'); exitToMenu()">ANA MENÜYE DÖN</button></div>
-  <div id="gameOverOverlay" class="ui-layer overlay hidden"><h2 style="color:#ef4444;">ÖLDÜN!</h2><div style="font-size: 20px; margin-bottom: 20px; text-align: center; text-shadow: 1px 1px 0 #000;">Toplam Para: <span id="finalMoney" style="color:#facc15;">0</span> TL<br>Bitcoin: <span id="finalBtc" style="color:#f7931a;">0</span> ₿<br>Dalga: <span id="finalWave" style="color:#60a5fa;">1</span></div><button class="pause-btn" onclick="playSound('start'); startGame()">YENİDEN DENE</button><button class="pause-btn quit" onclick="playSound('click'); exitToMenu()">ANA MENÜYE DÖN</button></div>
-</div>
 
+  <div id="pauseOverlay" class="ui-layer overlay hidden"><h2>DURAKLATILDI</h2><button class="pause-btn" onclick="resumeGame()">OYUNA DEVAM ET</button><button class="pause-btn restart" onclick="playSound('start'); startGame()">YENİDEN BAŞLA</button><button class="pause-btn quit" onclick="playSound('click'); exitToMenu()">ANA MENÜYE DÖN</button></div>
+  <div id="gameOverOverlay" class="ui-layer overlay hidden"><h2 style="color:#ef4444;">ÖLDÜN!</h2><div style="font-size: 20px; margin-bottom: 20px; text-align: center; text-shadow: 1px 1px 0 #000;">Kasa: <span id="finalMoney" style="color:#facc15;">0</span> TL<br>Bitcoin: <span id="finalBtc" style="color:#f7931a;">0</span> ₿<br>Dalga: <span id="finalWave" style="color:#60a5fa;">1</span><br><span style="font-size:14px; color:#94a3b8;">Taşıdığın hazineler kayboldu...</span></div><button class="pause-btn" onclick="playSound('start'); startGame()">YENİDEN DENE</button><button class="pause-btn quit" onclick="playSound('click'); exitToMenu()">ANA MENÜYE DÖN</button></div>
+</div>
 <script>
 // --- GÜVENLİ FIREBASE BAĞLANTISI ---
 let db = null;
@@ -197,10 +222,8 @@ if (typeof window !== 'undefined' && typeof firebase !== 'undefined') {
     firebase.initializeApp({ databaseURL: "https://corakbahce-default-rtdb.europe-west1.firebasedatabase.app/" });
     db = firebase.database();
     myPlayerId = db.ref('players_online').push().key;
-    
     db.ref('players_online/' + myPlayerId).set({ name: 'Misafir', status: 'Menüde', timestamp: Date.now() });
     db.ref('players_online/' + myPlayerId).onDisconnect().remove();
-    
     document.getElementById('serverStatus').innerText = 'Sunucu Durumu: Çevrimiçi';
     document.getElementById('serverStatus').style.color = '#4ade80';
   } catch (e) {
@@ -212,9 +235,6 @@ if (typeof window !== 'undefined' && typeof firebase !== 'undefined') {
   document.getElementById('serverStatus').style.color = '#ef4444';
 }
 
-// Firebase email encode (Firebase keys cannot have dots)
-function encodeEmail(email) { return email.replace(/\./g, ','); }
-
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const W = 900, H = 600;
@@ -222,36 +242,52 @@ const WORLD_W = 2400, WORLD_H = 1800;
 
 let audioCtx;
 function initAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } }
+function tone(type, f0, f1, dur, vol, delay) {
+  if(!audioCtx) return; const now = audioCtx.currentTime + (delay || 0);
+  const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination); osc.type = type;
+  osc.frequency.setValueAtTime(f0, now);
+  if(f1 && f1 !== f0) osc.frequency.exponentialRampToValueAtTime(Math.max(1,f1), now + dur);
+  gain.gain.setValueAtTime(vol, now); gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+  osc.start(now); osc.stop(now + dur + 0.02);
+}
 function playSound(type) {
-    if(!audioCtx) return; let now = audioCtx.currentTime; let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    if(type === 'shoot') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.1); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
-    else if(type === 'hit') { osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(30, now + 0.05); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
-    else if(type === 'zombie_death') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.linearRampToValueAtTime(20, now + 0.3); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
-    else if(type === 'coin') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.setValueAtTime(1200, now + 0.05); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
-    else if(type === 'reload') { osc.type = 'square'; osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05); osc.start(now); osc.stop(now + 0.05); let osc2 = audioCtx.createOscillator(); let gain2 = audioCtx.createGain(); osc2.connect(gain2); gain2.connect(audioCtx.destination); osc2.type = 'square'; osc2.frequency.setValueAtTime(150, now + 0.15); gain2.gain.setValueAtTime(0.1, now + 0.15); gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc2.start(now + 0.15); osc2.stop(now + 0.2); }
-    else if(type === 'click') { osc.type = 'square'; osc.frequency.setValueAtTime(600, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.03); osc.start(now); osc.stop(now + 0.03); }
-    else if(type === 'start' || type === 'wave') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.1); osc.frequency.setValueAtTime(800, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
-    else if(type === 'hurt') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.2); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+  if(!audioCtx) return;
+  if(type === 'shoot') tone('sawtooth', 300, 50, 0.1, 0.1);
+  else if(type === 'hit') tone('square', 150, 30, 0.05, 0.1);
+  else if(type === 'zombie_death') tone('sawtooth', 100, 20, 0.3, 0.15);
+  else if(type === 'coin') { tone('sine', 800, 800, 0.05, 0.1); tone('sine', 1200, 1200, 0.08, 0.1, 0.05); }
+  else if(type === 'reload') { tone('square', 200, 200, 0.05, 0.1); tone('square', 150, 150, 0.05, 0.1, 0.15); }
+  else if(type === 'click') tone('square', 600, 600, 0.03, 0.05);
+  else if(type === 'start' || type === 'wave') { tone('triangle', 400, 400, 0.1, 0.15); tone('triangle', 600, 600, 0.1, 0.15, 0.1); tone('triangle', 800, 800, 0.12, 0.15, 0.2); }
+  else if(type === 'hurt') tone('sawtooth', 200, 50, 0.2, 0.2);
+  else if(type === 'buy') { tone('sine', 500, 500, 0.06, 0.12); tone('sine', 900, 900, 0.1, 0.12, 0.07); }
+  else if(type === 'dash') tone('sine', 900, 200, 0.12, 0.08);
+  else if(type === 'switch') tone('square', 700, 900, 0.04, 0.07);
+  else if(type === 'empty') tone('square', 120, 120, 0.04, 0.08);
+  else if(type === 'boom') { tone('sawtooth', 90, 25, 0.45, 0.3); tone('sine', 60, 20, 0.5, 0.25); }
+  else if(type === 'elite') { tone('sawtooth', 300, 60, 0.4, 0.2); tone('sawtooth', 200, 40, 0.5, 0.2, 0.1); }
+  else if(type === 'heal') { tone('sine', 600, 900, 0.15, 0.1); }
+  else if(type === 'groan') tone('sine', 95, 55, 0.5, 0.05);
 }
 
 const state = {
   phase: 'menu', map: 'forest', player: null,
-  coins: [], enemies: [], bullets: [], particles: [], pickups: [], decorations: [],
+  coins: [], enemies: [], bullets: [], particles: [], pickups: [], decorations: [], btcs: [], texts: [],
   keys: {}, mouse: {x: W/2, y: H/2, down: false},
   camera: {x: 0, y: 0}, shake: 0, time: 0, flash: 0, lowHpEffect: 0,
-  wave: 1, enemiesToSpawn: 0, spawnTimer: 0, waveTimer: 0,
-  money: 1000, btc: 50,
-  currentBrawler: 'b0', ownedBrawlers: ['b0'],
+  wave: 1, enemiesToSpawn: 0, eliteToSpawn: 0, spawnTimer: 0, waveTimer: 0, banner: null,
+  money: 500, btc: 0,
+  currentBrawler: 'c0', ownedBrawlers: ['c0'],
   ownedWeapons: ['w0'], currentWeapon: 'w0',
-  ownedSkins: ['s0'], currentSkin: 's0',
+  upgrades: { hp: 0, dmg: 0, speed: 0, mag: 0, reload: 0, magnet: 0 },
   shopTab: 'weapons',
   isMP: false, isHost: false, roomCode: null, remotePlayers: {},
   guestName: null, hostName: null,
   loggedInUser: null, isAdmin: false, adminTier: 0,
   isTouch: ('ontouchstart' in window) || (navigator.maxTouchPoints > 0),
   touchControls: { left: { active: false, startX: 0, startY: 0, dx: 0, dy: 0 }, right: { active: false, startX: 0, startY: 0, dx: 0, dy: 0 } },
-  mapOpen: false
+  mapOpen: false, groanTimer: 300
 };
 
 const adminAccounts = [
@@ -266,68 +302,104 @@ const maps = {
   lava: {name:'Yanardağ', bg1:'#3d0000', bg2:'#1a0000', ground:'#5c0e0e'},
   city: {name:'Harabe Şehir', bg1:'#4a4e4e', bg2:'#2b2b2b', ground:'#3d3d3d'}
 };
-
 function cycleMap() { const keys = Object.keys(maps); let idx = keys.indexOf(state.map); idx = (idx + 1) % keys.length; state.map = keys[idx]; document.getElementById('mapName').textContent = maps[state.map].name; }
 
 const coinTypes = [
-  {name:'Bakır', color:'#fbbf24', darkColor:'#92400e', r:7, value:1}, {name:'Gümüş', color:'#e5e7eb', darkColor:'#6b7280', r:9, value:5},
-  {name:'Altın', color:'#fde047', darkColor:'#ca8a04', r:11, value:10}, {name:'Zümrüt', color:'#10b981', darkColor:'#065f46', r:8, value:25, glow:true},
-  {name:'Elmas', color:'#38bdf8', darkColor:'#0c4a6e', r:7, value:50, glow:true}, {name:'Yakut', color:'#ef4444', darkColor:'#7f1d1d', r:10, value:100, glow:true}
+  {name:'Bakır', color:'#fbbf24', darkColor:'#92400e', r:7, value:1},
+  {name:'Gümüş', color:'#e5e7eb', darkColor:'#6b7280', r:9, value:5},
+  {name:'Altın', color:'#fde047', darkColor:'#ca8a04', r:11, value:10},
+  {name:'Zümrüt', color:'#10b981', darkColor:'#065f46', r:8, value:25, glow:true},
+  {name:'Elmas', color:'#38bdf8', darkColor:'#0c4a6e', r:7, value:50, glow:true},
+  {name:'Yakut', color:'#ef4444', darkColor:'#7f1d1d', r:10, value:100, glow:true}
 ];
 
-const weapons = {};
-const wNames = ['Tabanca', 'Tüfek', 'Pompalı', 'Sniper', 'Roket', 'Lazer', 'Plazma', 'Asit', 'Buz', 'Alev'];
-for(let i=0; i<100; i++) {
-  let id = 'w' + i; let name = wNames[i%10] + ' Mk-' + (Math.floor(i/10)+1); let dmg = 20 + i * 5; let mag = 5 + Math.floor(i/2);
-  weapons[id] = { name, dmg, cd: Math.max(30, 300 - i * 3), spread: 0.05, bullets: (i%5===0 ? 5 : 1), speed: 8 + (i%5)*2, color: `hsl(${i*36}, 80%, 50%)`, price: i===0 ? 0 : 100 + i * 150, mag, reloadTime: Math.max(1000, 5000 - i*30), knock: 1 + (i%4), icon: '🔫', desc: `${mag} mermi, ${dmg} hasar` };
+// --- 8 EL YAPIMI SİLAH ---
+const weapons = {
+  w0: { name:'Tabanca',       desc:'Güvenli başlangıç silahı',      dmg:22, cd:270, mag:12, reload:1100, speed:10, spread:0.045, bullets:1, knock:1.2, price:0,    color:'#cbd5e1', kind:'pistol' },
+  w1: { name:'Çakmak SMG',    desc:'Hızlı ateş, düşük hasar',        dmg:12, cd:95,  mag:32, reload:1500, speed:11, spread:0.10,  bullets:1, knock:0.7, price:750,  color:'#f97316', kind:'smg' },
+  w2: { name:'Pompalı',       desc:'7 saçma, yakında yıkıcı',        dmg:11, cd:720, mag:6,  reload:2100, speed:9,  spread:0.38,  bullets:7, knock:2.6, price:1400, color:'#a16207', kind:'shotgun' },
+  w3: { name:'Tufan Tüfeği',  desc:'Dengeli otomatik tüfek',         dmg:21, cd:150, mag:24, reload:1700, speed:12, spread:0.055, bullets:1, knock:1.1, price:2200, color:'#84cc16', kind:'rifle' },
+  w4: { name:'Şahin Gözü',    desc:'Zırh delici keskin nişancı',     dmg:90, cd:820, mag:5,  reload:1900, speed:18, spread:0,     bullets:1, knock:2.4, price:3200, color:'#38bdf8', kind:'sniper', pierce:2 },
+  w5: { name:'Ezici',         desc:'80 mermilik minigun yağmuru',    dmg:10, cd:58,  mag:80, reload:2700, speed:12, spread:0.13,  bullets:1, knock:0.6, price:4500, color:'#ef4444', kind:'minigun' },
+  w6: { name:'Roketatar',     desc:'Alan hasarlı patlama',           dmg:65, cd:900, mag:4,  reload:2500, speed:7,  spread:0.02,  bullets:1, knock:3,   price:5600, color:'#7c3aed', kind:'rocket', aoe:80 },
+  w7: { name:'Kıyamet',       desc:'Her şeyi delip geçen plazma',    dmg:46, cd:210, mag:20, reload:2200, speed:14, spread:0.03,  bullets:1, knock:1.5, price:7500, color:'#22d3ee', kind:'plasma', pierce:4 }
+};
+const WEAPON_LIST = Object.keys(weapons);
+
+// --- 6 YÜKSELTME (her biri 3 seviye) ---
+const upgradeDefs = {
+  hp:     { name:'Dayanıklılık',  desc:'Azami can +20',            base:300, icon:'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z', color:'#f87171' },
+  dmg:    { name:'Ateş Gücü',     desc:'Hasar +12%',               base:350, icon:'M14 3h6v4h-2l-1 3h-3v9a2 2 0 01-2 2H8v2H4v-4h4v-2h4v-7h-2l-1-3H7V3h5l1 2 1-2z', color:'#fbbf24' },
+  speed:  { name:'Ayaklar',       desc:'Hız +8%',                  base:300, icon:'M13 5.5c0-.83.67-1.5 1.5-1.5S16 4.67 16 5.5 15.33 7 14.5 7 13 6.33 13 5.5zM20 10v6h-2l-2-4-2.5 5 2 2v5h-2v-4l-2-2-1 3H8l1.5-5.5L7 14l-3 1-1-2 4-2h4l1-2h-3V7h4l1 2h4l1 1z', color:'#4ade80' },
+  mag:    { name:'Geniş Şarjör',  desc:'Şarjör kapasitesi +30%',   base:325, icon:'M7 3h10v18l-2-1-1 1-2-1-2 1-1-1-2 1V3zm2 3v2h6V6H9z', color:'#60a5fa' },
+  reload: { name:'Hızlı Şarjör',  desc:'Doldurma süresi -15%',     base:325, icon:'M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z', color:'#f97316' },
+  magnet: { name:'Mıknatıs',      desc:'Toplama alanı +26',        base:300, icon:'M4 3v8a8 8 0 0016 0V3h-5v8a3 3 0 01-6 0V3H4zm2 18h4v-2H6v2zm6 0h4v-2h-4v2z', color:'#a855f7' }
+};
+const UPGRADE_MAX = 3;
+function upgradePrice(key) { return upgradeDefs[key].base * (state.upgrades[key] + 1); }
+function magOf(id) { return Math.round(weapons[id].mag * (1 + 0.3 * state.upgrades.mag)); }
+function reloadTimeOf(id) { return Math.round(weapons[id].reload * (1 - 0.15 * state.upgrades.reload)); }
+
+// --- 6 ÖZGÜN KARAKTER (canvas ile çizilir, emoji yok) ---
+const characters = [
+  { id:'c0', name:'Kaya',  role:'Asker',      price:0,  hpMul:1.00, speedMul:1.00, dmgMul:1.00, dashCdMul:1.00, regen:0, scale:1.00, ability:'Dengeli asker · her alanda güvenilir',
+    look:{ body:'#55663d', pants:'#3b4a2f', skin:'#e0ac69', hair:'#3a2a1a', gear:'helmet',  gearColor:'#3e4a2c' } },
+  { id:'c1', name:'Efe',   role:'İzci',       price:4,  hpMul:0.85, speedMul:1.30, dmgMul:0.95, dashCdMul:0.60, regen:0, scale:0.95, ability:'Çevik · atılma bekleme süresi %40 düşük',
+    look:{ body:'#8a5a33', pants:'#4a3a28', skin:'#f0c8a0', hair:'#20201c', gear:'bandana', gearColor:'#b91c1c' } },
+  { id:'c2', name:'Ayşe',  role:'Feldşer',    price:8,  hpMul:0.95, speedMul:1.05, dmgMul:0.95, dashCdMul:1.00, regen:2, scale:0.98, ability:'Saniyede 2 can yeniler',
+    look:{ body:'#e8e6e0', pants:'#5a6270', skin:'#f2d3b3', hair:'#6b3f1d', gear:'medic',   gearColor:'#ffffff', bun:true } },
+  { id:'c3', name:'Şahin', role:'Nişancı',    price:12, hpMul:0.80, speedMul:1.05, dmgMul:1.22, dashCdMul:1.00, regen:0, scale:1.00, ability:'+%22 hasar · isabet şart',
+    look:{ body:'#2f333d', pants:'#23262e', skin:'#e6b98f', hair:'#15161a', gear:'beret',   gearColor:'#1f2937', glasses:true } },
+  { id:'c4', name:'Demir', role:'Ağır Silah', price:16, hpMul:1.60, speedMul:0.80, dmgMul:1.10, dashCdMul:1.15, regen:0, scale:1.18, ability:'Zırhlı dev · çok dayanıklı',
+    look:{ body:'#4b5563', pants:'#374151', skin:'#d9a066', hair:'#26221e', gear:'heavy',   gearColor:'#6b7280' } },
+  { id:'c5', name:'Gölge', role:'Avcı',       price:25, hpMul:0.90, speedMul:1.15, dmgMul:1.12, dashCdMul:0.45, regen:1, scale:1.00, ability:'Usta avcı · hızlı atılma + hafif yenileme',
+    look:{ body:'#1f2429', pants:'#14171a', skin:'#c8956c', hair:'#0c0d10', gear:'hood',    gearColor:'#191d22' } }
+];
+function charById(id) { return characters.find(c => c.id === id) || characters[0]; }
+
+// --- KAYIT SİSTEMİ (localStorage) ---
+function saveGame() {
+  if (state.isAdmin) return;
+  try {
+    localStorage.setItem('corak_save', JSON.stringify({
+      money: state.money, btc: state.btc,
+      ownedWeapons: state.ownedWeapons, currentWeapon: state.currentWeapon,
+      ownedBrawlers: state.ownedBrawlers, currentBrawler: state.currentBrawler,
+      upgrades: state.upgrades
+    }));
+  } catch(e) {}
+}
+function loadGame() {
+  try {
+    const s = JSON.parse(localStorage.getItem('corak_save') || 'null');
+    if (!s) return;
+    if (Number.isFinite(s.money) && s.money >= 0) state.money = s.money;
+    if (Number.isFinite(s.btc) && s.btc >= 0) state.btc = s.btc;
+    if (Array.isArray(s.ownedWeapons)) state.ownedWeapons = s.ownedWeapons.filter(w => weapons[w]);
+    if (weapons[s.currentWeapon] && state.ownedWeapons.includes(s.currentWeapon)) state.currentWeapon = s.currentWeapon;
+    if (Array.isArray(s.ownedBrawlers)) state.ownedBrawlers = s.ownedBrawlers.filter(b => charById(b).id === b);
+    if (!state.ownedWeapons.includes('w0')) state.ownedWeapons.unshift('w0');
+    if (!state.ownedBrawlers.includes('c0')) state.ownedBrawlers.unshift('c0');
+    if (charById(s.currentBrawler).id === s.currentBrawler && state.ownedBrawlers.includes(s.currentBrawler)) state.currentBrawler = s.currentBrawler;
+    if (s.upgrades) for (const k in state.upgrades) if (Number.isFinite(s.upgrades[k])) state.upgrades[k] = Math.max(0, Math.min(UPGRADE_MAX, s.upgrades[k]));
+  } catch(e) {}
 }
 
-const shopSkins = [];
-const skNames = ['Altın', 'Elmas', 'Rub', 'Zümrüt', 'Karanlık', 'Neon', 'Buz', 'Ateş', 'Toksik', 'Gökkuşağı', 'Metalik', 'Karbon'];
-for(let i=0; i<250; i++) { shopSkins.push({ id:'s'+i, name: skNames[i%12] + ' Kaplama ' + (Math.floor(i/12)+1), desc: `Silahına özel renk`, price: 50 + i*20, icon:'🎨', color: `hsl(${i*1.44}, 70%, 50%)`, type:'skin' }); }
+let corakUsers = {};
+try { if (typeof localStorage !== 'undefined') corakUsers = JSON.parse(localStorage.getItem('corak_users') || '{}'); } catch(e) { corakUsers = {}; }
 
-const shopElixirs = [];
-const eNames = ['Can', 'Hız', 'Güç', 'Kalkan', 'Mıknatıs', 'Rejenerasyon', 'Vampirik', 'Adrenalin', 'Öfke', 'Kritik'];
-for(let i=0; i<100; i++) { shopElixirs.push({ id:'e'+i, name: eNames[i%10] + ' İksiri Lvl ' + (Math.floor(i/10)+1), desc: `Seviye ${i+1} Etki`, price: 50 + i*50, icon:'🧪', color: `hsl(${i*36}, 70%, 50%)`, type:'elixir', action:()=>{ if(state.player) { state.player.hp = Math.min(state.player.maxHp, state.player.hp + 50); playSound('coin'); } } }); }
-
-const shopPowers = [];
-const pNames = ['Nükleer', 'Elmas Drone', 'Kalıcı HP', 'Kalıcı Hasar', 'Kritik Ustası', 'Patlayıcı Mermi', 'Zırh Delici', 'Tanrı Modu', 'Buz Fırtınası', 'Şimşek'];
-for(let i=0; i<100; i++) { shopPowers.push({ id:'p'+i, name: pNames[i%10] + ' X' + (Math.floor(i/10)+1), desc: `Süper Güç ${i+1}`, price: 10 + i*10, icon:'💎', color: `hsl(${i*36}, 70%, 50%)`, btc:true, type:'power', action:()=>{ if(state.player) { state.player.maxHp += 10; state.player.hp += 10; playSound('start'); } } }); }
-
-const shopBtc = [];
-for(let i=0; i<100; i++) { let amount = (i+1) * 10; shopBtc.push({ id:'btc'+i, name: amount + ' Bitcoin', desc: `+${amount} BTC`, price: (i+1)*10, icon:'₿', color:'#f7931a', type:'btc', action:()=>{ state.btc += amount; playSound('coin'); } }); }
-
-const brawlers = [];
-const bNames = ['Savaşçı', 'Paladin', 'Avcı', 'Okçu', 'Hırsız', 'Rahip', 'Şövalye', 'Silahşör', 'Büyücü', 'Simyacı'];
-const bIcons = ['⚔️', '🛡️', '🏹', '🎯', '🗡️', '✨', '🛡️', '🔫', '🔥', '⚗️'];
-for(let i=0; i<50; i++) { 
-  let cls = i % 10;
-  brawlers.push({ id:'b'+i, name: bNames[cls] + ' ' + (Math.floor(i/10)+1), desc: `Özel Karakter ${i+1}`, price: i===0?0:1000+i*500, icon:bIcons[cls], color: `hsl(${i*7.2}, 70%, 50%)`, speedMul: 1 + (i%5)*0.1, hpMul: 1 + (i%5)*0.2, dmgMul: 1 + (i%5)*0.1 }); 
-}
-
-// --- FIREBASE LOGIN/REGISTER ---
-async function register() {
+function register() {
   try {
     let e = document.getElementById('regEmail').value.trim().toLowerCase(); let p = document.getElementById('regPass').value;
-    if(!e || !p) { alert('Lütfen email ve şifre girin!'); return; }
-    if (!db) { alert('Veritabanı bağlantısı yok!'); return; }
-    
-    const userRef = db.ref('users/' + encodeEmail(e));
-    const snap = await userRef.get();
-    if (snap.exists()) { alert('Bu email zaten kayıtlı!'); return; }
-    
-    await userRef.set({ password: p, tier: 0, btc: 0 });
-    alert('Kayıt başarılı! Şimdi giriş yapabilirsin.');
-    playSound('click');
+    if(!e || !p) { alert('Lütfen email ve şifre girin!'); return; } if(corakUsers[e]) { alert('Bu email zaten kayıtlı!'); return; }
+    corakUsers[e] = p; try { if (typeof localStorage !== 'undefined') localStorage.setItem('corak_users', JSON.stringify(corakUsers)); } catch(err) {}
+    alert('Kayıt başarılı! Şimdi giriş yapabilirsin.'); playSound('click');
   } catch(err) { alert('Kayıt hatası: ' + err.message); }
 }
-
-async function login() {
+function login() {
   try {
     let e = document.getElementById('loginEmail').value.trim().toLowerCase(); let p = document.getElementById('loginPass').value;
     if(!e || !p) { alert('Lütfen email ve şifre girin!'); return; }
-    if (!db) { alert('Veritabanı bağlantısı yok!'); return; }
-    
     let adminAcc = adminAccounts.find(a => a.email.toLowerCase() === e && a.pass === p);
     if(adminAcc) {
       state.isAdmin = true; state.adminTier = adminAcc.tier; state.loggedInUser = e.split('@')[0];
@@ -335,15 +407,11 @@ async function login() {
       if(db && myPlayerId) db.ref('players_online/' + myPlayerId).update({ name: state.loggedInUser, status: 'Admin Menüde' });
       alert('Admin ' + adminAcc.tier + ' girişi başarılı!'); playSound('start'); closeOverlay('accountOverlay'); return;
     }
-
-    const userRef = db.ref('users/' + encodeEmail(e));
-    const snap = await userRef.get();
-    
-    if (snap.exists() && snap.val().password === p) {
-      state.isAdmin = false; state.adminTier = 0; state.loggedInUser = e.split('@')[0]; 
-      document.getElementById('playerName').textContent = state.loggedInUser; 
+    if(corakUsers[e] && corakUsers[e] === p) {
+      state.isAdmin = false; state.adminTier = 0; state.loggedInUser = e.split('@')[0];
+      document.getElementById('playerName').textContent = state.loggedInUser;
       if(db && myPlayerId) db.ref('players_online/' + myPlayerId).update({ name: state.loggedInUser, status: 'Menüde' });
-      alert('Giriş yapıldı: ' + state.loggedInUser); playSound('click'); closeOverlay('accountOverlay'); 
+      alert('Giriş yapıldı: ' + state.loggedInUser); playSound('click'); closeOverlay('accountOverlay');
     } else { alert('Hatalı email veya şifre!'); playSound('hurt'); }
   } catch(err) { alert('Giriş hatası: ' + err.message); }
 }
@@ -352,64 +420,60 @@ function applyAdminPrivileges() {
   if (state.isAdmin) {
     let tier = state.adminTier;
     let badgeClass = 'admin-badge' + (tier === 10 ? ' tier10' : '');
-    let badgeText = 'ADMIN ' + tier;
-    if (tier === 10) badgeText = 'ADMIN 10 (SINIRSIZ)';
-    
-    document.getElementById('playerName').innerHTML = state.loggedInUser + ' <span class="' + badgeClass + '">' + badgeText + '</span>';
-    
+    let badgeText = tier === 10 ? 'ADMIN 10 (SINIRSIZ)' : 'ADMIN ' + tier;
+    document.getElementById('playerName').innerHTML = (state.loggedInUser || 'Misafir') + ' <span class="' + badgeClass + '">' + badgeText + '</span>';
     if (tier === 10) {
       state.money = 999999999; state.btc = 999999999;
-      state.ownedWeapons = Object.keys(weapons); state.ownedSkins = shopSkins.map(s => s.id); state.ownedBrawlers = brawlers.map(b => b.id);
+      state.ownedWeapons = WEAPON_LIST.slice();
+      state.ownedBrawlers = characters.map(c => c.id);
+      for (const k in state.upgrades) state.upgrades[k] = UPGRADE_MAX;
     } else {
       state.money = tier * 100000; state.btc = tier * 10;
-      state.ownedWeapons = Object.keys(weapons).slice(0, tier * 10);
-      state.ownedSkins = shopSkins.slice(0, tier * 10).map(s => s.id);
-      state.ownedBrawlers = brawlers.slice(0, tier * 5).map(b => b.id);
+      state.ownedWeapons = WEAPON_LIST.slice(0, Math.min(WEAPON_LIST.length, tier));
+      state.ownedBrawlers = characters.slice(0, Math.min(characters.length, tier)).map(c => c.id);
+      for (const k in state.upgrades) state.upgrades[k] = Math.min(UPGRADE_MAX, tier);
     }
   } else {
     document.getElementById('playerName').textContent = state.loggedInUser || 'Misafir';
   }
-  updateMenuUI(); renderShop(); renderBrawlers();
+  updateMenuUI(); renderShop(); renderCharacters();
 }
 
 function addFriendFromInput() { const input = document.getElementById('newFriendInput'); const name = input.value.trim(); if (name !== "") { const list = document.getElementById('friendsList'); const p = document.createElement('p'); p.style.cssText = "font-size:16px; padding:10px; background:#333; border-radius:8px; margin-bottom:5px;"; p.innerHTML = "🟡 " + name + " (Beklemede)"; list.appendChild(p); input.value = ""; playSound('click'); } }
-
+</script>
+<script>
 // --- FIREBASE ÇOK OYUNCULU SİSTEMİ ---
 function createRoom() {
   if (!db) { alert('Sunucu bağlantısı yok!'); return; }
   let code = Math.random().toString(36).substr(2, 6).toUpperCase();
   state.roomCode = code; state.isHost = true; state.isMP = true;
-  
   db.ref('rooms/' + code).set({
     host: { name: state.loggedInUser || 'Misafir', x: WORLD_W/2, y: WORLD_H/2, angle: 0, hp: 100, brawler: state.currentBrawler, mpId: myPlayerId },
-    guest: null, enemies: [], bullets: [], pickups: [], coins: [], wave: 1, timestamp: Date.now()
+    guest: null, enemies: [], bullets: [], pickups: [], coins: [], btcs: [], wave: 1, timestamp: Date.now()
   });
-  
   db.ref('rooms/' + code + '/guest').on('value', (snap) => {
     const g = snap.val();
-    if (g) { state.guestName = g.name; if(!state.remotePlayers[g.mpId]) state.remotePlayers[g.mpId] = {}; state.remotePlayers[g.mpId] = g; }
+    if (g) { state.guestName = g.name; state.remotePlayers[g.mpId] = g; }
     else { state.guestName = null; state.remotePlayers = {}; }
   });
-  
   db.ref('rooms/' + code + '/events/guestShoot').on('value', (snap) => {
     const data = snap.val();
-    if (data) {
+    if (data && weapons[data.weapon]) {
       const w = weapons[data.weapon];
       for(let i=0; i<w.bullets; i++) {
         const spread = (Math.random()-0.5) * w.spread * 2; const ang = data.angle + spread + (i - w.bullets/2 + 0.5) * 0.05;
-        state.bullets.push({ x: data.x + Math.cos(data.angle)*25, y: data.y + Math.sin(data.angle)*25, vx: Math.cos(ang)*w.speed, vy: Math.sin(ang)*w.speed, r: 4, dmg: w.dmg, life: 60, color: data.color, knock: w.knock });
+        state.bullets.push({ x: data.x + Math.cos(data.angle)*25, y: data.y + Math.sin(data.angle)*25, vx: Math.cos(ang)*w.speed, vy: Math.sin(ang)*w.speed, r: 4, dmg: w.dmg, life: 60, color: w.color, knock: w.knock, kind: w.kind, pierce: w.pierce || 0, aoe: w.aoe || 0, hits: [] });
       }
       db.ref('rooms/' + code + '/events/guestShoot').remove();
     }
   });
-  
   db.ref('rooms/' + code + '/events/guestPickup').on('child_added', (snap) => {
     const data = snap.val(); if(!data) return;
     if(data.type === 'coin') { let c = state.coins.find(c => c.x === data.x && c.y === data.y); if(c) c.collected = true; }
     if(data.type === 'pickup') { let pk = state.pickups.find(p => p.x === data.x && p.y === data.y); if(pk) pk.collected = true; }
+    if(data.type === 'btc') { let b = state.btcs.find(b => b.x === data.x && b.y === data.y); if(b) b.collected = true; }
     snap.ref.remove();
   });
-  
   if(db && myPlayerId) db.ref('players_online/' + myPlayerId).update({ status: 'Oyunda (Host)' });
   alert('Oda Kuruldu! Kod: ' + code + '\nArkadaşına bu kodu ver.');
 }
@@ -417,7 +481,6 @@ function joinRoom() {
   if (!db) { alert('Sunucu bağlantısı yok!'); return; }
   let code = document.getElementById('roomInput').value.trim().toUpperCase();
   if(code.length < 4) return alert('Geçerli bir oda kodu gir!');
-  
   db.ref('rooms/' + code).get().then((snap) => {
     if (snap.exists()) {
       state.roomCode = code; state.isHost = false; state.isMP = true;
@@ -425,301 +488,837 @@ function joinRoom() {
       db.ref('rooms/' + code).on('value', (s) => {
         const data = s.val(); if (!data) { alert('Oda kapatıldı.'); state.isMP = false; exitToMenu(); return; }
         state.enemies = data.enemies || []; state.wave = data.wave || 1; state.bullets = data.bullets || [];
-        state.coins = data.coins || []; state.pickups = data.pickups || [];
-        if(data.host) { state.hostName = data.host.name; if(!state.remotePlayers[data.host.mpId]) state.remotePlayers[data.host.mpId] = {}; state.remotePlayers[data.host.mpId] = data.host; }
+        state.coins = data.coins || []; state.pickups = data.pickups || []; state.btcs = data.btcs || [];
+        if(data.host) { state.hostName = data.host.name; state.remotePlayers[data.host.mpId] = data.host; }
       });
       if(db && myPlayerId) db.ref('players_online/' + myPlayerId).update({ status: 'Oyunda (Misafir)' });
       alert('Odaya katıldın! Oyun başlıyor...'); startGame();
     } else { alert('Oda bulunamadı!'); }
   }).catch(e => alert('Hata: ' + e.message));
 }
-
 function broadcastState() {
   if(!state.isMP || !state.player || !db) return;
   try {
     if(state.isHost) {
-      let zData = state.enemies.map(e => ({x: e.x, y: e.y, r: e.r, hp: e.hp, maxHp: e.maxHp, angle: e.angle, bob: e.bob, type: e.type, color: e.color, hitFlash: e.hitFlash}));
+      let zData = state.enemies.map(e => ({x: e.x, y: e.y, r: e.r, hp: e.hp, maxHp: e.maxHp, angle: e.angle, bob: e.bob, type: e.type, color: e.color}));
       let pData = {x: state.player.x, y: state.player.y, angle: state.player.angle, hp: state.player.hp, brawler: state.currentBrawler, mpId: myPlayerId, name: state.loggedInUser || 'Misafir'};
       let bData = state.bullets.map(b => ({x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: b.r, color: b.color}));
       let cData = state.coins.map(c => ({x: c.x, y: c.y, r: c.r, bob: c.bob, color: c.color, value: c.value, glow: c.glow, collected: c.collected}));
       let pkData = state.pickups.map(pk => ({x: pk.x, y: pk.y, r: pk.r, bob: pk.bob, color: pk.color, value: pk.value, collected: pk.collected}));
-      db.ref('rooms/' + state.roomCode).update({ host: pData, enemies: zData, bullets: bData, coins: cData, pickups: pkData, wave: state.wave });
+      let btcData = state.btcs.map(b => ({x: b.x, y: b.y, r: b.r, bob: b.bob, collected: b.collected}));
+      db.ref('rooms/' + state.roomCode).update({ host: pData, enemies: zData, bullets: bData, coins: cData, pickups: pkData, btcs: btcData, wave: state.wave });
     } else {
       db.ref('rooms/' + state.roomCode + '/guest').update({ x: state.player.x, y: state.player.y, angle: state.player.angle, hp: state.player.hp, brawler: state.currentBrawler, name: state.loggedInUser || 'Misafir' });
     }
   } catch(e) { console.error("Veri gönderme hatası:", e); }
 }
 
+// --- OVERLAY YÖNETİMİ ---
 function openOverlay(id) { const el = document.getElementById(id); el.classList.remove('hidden'); el.classList.add('active'); canvas.style.cursor = 'default'; if(state.phase === 'playing') state.phase = 'paused'; }
-function closeOverlay(id) { const el = document.getElementById(id); el.classList.add('hidden'); el.classList.remove('active'); if(state.phase === 'paused' && (id === 'shopOverlay' || id === 'pauseOverlay')) { state.phase = 'playing'; canvas.style.cursor = 'crosshair'; } }
+function closeOverlay(id) {
+  const el = document.getElementById(id); el.classList.add('hidden'); el.classList.remove('active');
+  const anyOpen = ['shopOverlay','pauseOverlay','friendsOverlay','accountOverlay','brawlerOverlay','gameOverOverlay'].some(o => document.getElementById(o).classList.contains('active'));
+  if(state.phase === 'paused' && !anyOpen && !state.mapOpen) { state.phase = 'playing'; if(!state.isTouch) canvas.style.cursor = 'crosshair'; }
+}
 function switchTab(tab) { state.shopTab = tab; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active'); renderShop(); }
 
-function renderShop() { 
-  const grid = document.getElementById('shopGrid'); 
+// --- MARKET ---
+function renderShop() {
+  const grid = document.getElementById('shopGrid');
   let isAdmin10 = state.isAdmin && state.adminTier === 10;
-  document.getElementById('shopMoney').textContent = isAdmin10 ? '∞' : state.money; 
-  document.getElementById('shopBtc').textContent = isAdmin10 ? '∞' : state.btc; 
-  grid.innerHTML = ''; let items = []; 
-  if(state.shopTab === 'weapons') items = Object.keys(weapons).filter(k => weapons[k].price > 0).map(k => ({id:k, ...weapons[k], type:'weapon'})); 
-  else if(state.shopTab === 'skins') items = shopSkins; else if(state.shopTab === 'elixirs') items = shopElixirs; else if(state.shopTab === 'powers') items = shopPowers; else if(state.shopTab === 'btc') items = shopBtc; 
-  items.forEach(item => { 
-    const owned = (item.type === 'weapon' && state.ownedWeapons.includes(item.id)) || (item.type === 'skin' && state.ownedSkins.includes(item.id)); 
-    const equipped = (item.type === 'weapon' && state.currentWeapon === item.id) || (item.type === 'skin' && state.currentSkin === item.id); 
-    const card = document.createElement('div'); card.className = 'shop-card' + (owned ? ' owned' : '') + (equipped ? ' selected' : ''); 
-    let priceText = owned ? (equipped ? 'KULLANIMDA' : 'KUŞAN') : (isAdmin10 ? 'ÜCRETSİZ' : `${item.price} ${item.btc ? 'BTC' : 'TL'}`); 
-    card.innerHTML = `<div class="shop-icon" style="background:${item.color}33; border:1px solid ${item.color}">${item.icon}</div><div class="shop-info"><div class="shop-name">${item.name}</div><div class="shop-desc">${item.desc}</div></div><div class="shop-price" style="color:${equipped ? '#facc15' : '#fff'}">${priceText}</div>`; 
-    card.onclick = () => handleShopClick(item); grid.appendChild(card); 
-  }); 
+  document.getElementById('shopMoney').textContent = isAdmin10 ? '∞' : state.money;
+  document.getElementById('shopBtc').textContent = isAdmin10 ? '∞' : state.btc;
+  grid.innerHTML = '';
+  if (state.shopTab === 'weapons') {
+    WEAPON_LIST.forEach(id => {
+      const w = weapons[id];
+      const owned = state.ownedWeapons.includes(id);
+      const equipped = state.currentWeapon === id;
+      const card = document.createElement('div'); card.className = 'shop-card' + (owned ? ' owned' : '') + (equipped ? ' selected' : '');
+      const stats = `Hasar ${w.dmg}${w.bullets>1?'×'+w.bullets:''} · Şarjör ${magOf(id)} · ${w.pierce?('Delme '+w.pierce+' · '):''}${w.aoe?('Alan patlaması · '):''}Atış ${(w.cd/1000).toFixed(2)}sn`;
+      const priceText = owned ? (equipped ? 'KUŞANILIYOR' : 'KUŞAN') : (isAdmin10 ? 'ÜCRETSİZ' : w.price + ' TL');
+      card.innerHTML = `<div class="shop-icon"><canvas width="56" height="56" data-weapon="${w.kind}" data-color="${w.color}"></canvas></div>
+        <div class="shop-info"><div class="shop-name">${w.name}</div><div class="shop-desc">${w.desc}</div><div class="shop-stat">${stats}</div></div>
+        <div class="shop-price" style="color:${equipped ? '#facc15' : '#fff'}">${priceText}</div>`;
+      card.onclick = () => handleShopClick({ type:'weapon', id, ...w });
+      grid.appendChild(card);
+      drawWeaponIcon(card.querySelector('canvas'), w.kind, w.color);
+    });
+  } else {
+    Object.keys(upgradeDefs).forEach(key => {
+      const u = upgradeDefs[key]; const lvl = state.upgrades[key];
+      const maxed = lvl >= UPGRADE_MAX;
+      const isAdmin10 = state.isAdmin && state.adminTier === 10;
+      const card = document.createElement('div'); card.className = 'shop-card' + (maxed ? ' owned' : '');
+      const pips = [0,1,2].map(i => `<span class="pip${i < lvl ? ' on' : ''}"></span>`).join('');
+      const priceText = maxed ? 'TAMAM' : (isAdmin10 ? 'ÜCRETSİZ' : upgradePrice(key) + ' TL');
+      card.innerHTML = `<div class="shop-icon"><svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:${u.color};"><path d="${u.icon}"/></svg></div>
+        <div class="shop-info"><div class="shop-name">${u.name}</div><div class="shop-desc">${u.desc}</div><div class="pips" style="justify-content:flex-start;">${pips}</div></div>
+        <div class="shop-price" style="color:${maxed ? '#22c55e' : '#fff'}">${priceText}</div>`;
+      card.onclick = () => handleUpgradeClick(key);
+      grid.appendChild(card);
+    });
+  }
 }
-function renderBrawlers() { const grid = document.getElementById('brawlerGrid'); grid.innerHTML = ''; let isAdmin10 = state.isAdmin && state.adminTier === 10; brawlers.forEach(b => { const owned = state.ownedBrawlers.includes(b.id); const selected = state.currentBrawler === b.id; const card = document.createElement('div'); card.className = 'shop-card' + (owned ? ' owned' : '') + (selected ? ' selected' : ''); let priceText = owned ? (selected ? 'SEÇİLİ' : 'SEÇ') : (isAdmin10 ? 'ÜCRETSİZ' : `${b.price} TL`); card.innerHTML = `<div class="shop-icon" style="background:${b.color}33; border:1px solid ${b.color}; font-size:32px;">${b.icon}</div><div class="shop-info"><div class="shop-name">${b.name}</div><div class="shop-desc">${b.desc}</div></div><div class="shop-price" style="color:${selected ? '#facc15' : '#fff'}">${priceText}</div>`; card.onclick = () => handleBrawlerClick(b); grid.appendChild(card); }); }
-function handleShopClick(item) { 
-  playSound('click'); let isAdmin10 = state.isAdmin && state.adminTier === 10;
-  if (item.type === 'weapon') { if (state.ownedWeapons.includes(item.id)) { state.currentWeapon = item.id; if(state.player) { state.player.weapon = item.id; state.player.ammo[item.id] = weapons[item.id].mag; } } else { if (!isAdmin10 && state.money < item.price) return playSound('hurt'); if(!isAdmin10) state.money -= item.price; state.ownedWeapons.push(item.id); state.currentWeapon = item.id; if(state.player) { state.player.weapon = item.id; state.player.ammo[item.id] = weapons[item.id].mag; } playSound('start'); } } 
-  else if (item.type === 'skin') { if (state.ownedSkins.includes(item.id)) { state.currentSkin = item.id; if(state.player) state.player.skinColor = item.color; } else { if (!isAdmin10 && state.money < item.price) return playSound('hurt'); if(!isAdmin10) state.money -= item.price; state.ownedSkins.push(item.id); state.currentSkin = item.id; if(state.player) state.player.skinColor = item.color; playSound('start'); } } 
-  else if (item.type === 'power') { if (!isAdmin10 && state.btc < item.price) return playSound('hurt'); if(!isAdmin10) state.btc -= item.price; item.action(); } 
-  else if (item.type === 'btc') { if (!isAdmin10 && state.money < item.price) return playSound('hurt'); if(!isAdmin10) state.money -= item.price; item.action(); } 
-  else if (item.type === 'elixir') { if (!isAdmin10 && state.money < item.price) return playSound('hurt'); if(!isAdmin10) state.money -= item.price; item.action(); } 
-  updateMenuUI(); renderShop(); 
+function renderCharacters() {
+  const grid = document.getElementById('brawlerGrid'); grid.innerHTML = '';
+  const isAdmin10 = state.isAdmin && state.adminTier === 10;
+  characters.forEach(b => {
+    const owned = state.ownedBrawlers.includes(b.id);
+    const selected = state.currentBrawler === b.id;
+    const card = document.createElement('div'); card.className = 'shop-card' + (owned ? ' owned' : '') + (selected ? ' selected' : '');
+    const priceText = owned ? (selected ? 'SEÇİLİ' : 'SEÇ') : (isAdmin10 ? 'ÜCRETSİZ' : b.price + ' ₿');
+    card.innerHTML = `<div class="shop-icon"><canvas width="56" height="56" data-char="${b.id}"></canvas></div>
+      <div class="shop-info"><div class="shop-name">${b.name} <span style="font-size:11px;color:#94a3b8;">· ${b.role}</span></div><div class="shop-desc">${b.ability}</div><div class="shop-stat">Can ${Math.round(100*b.hpMul)} · Hız ${(b.speedMul*100).toFixed(0)} · Hasar ${(b.dmgMul*100).toFixed(0)}</div></div>
+      <div class="shop-price" style="color:${selected ? '#facc15' : '#fff'}">${priceText}</div>`;
+    card.onclick = () => handleCharacterClick(b);
+    grid.appendChild(card);
+    drawCharIcon(card.querySelector('canvas'), b);
+  });
 }
-function handleBrawlerClick(b) { playSound('click'); let isAdmin10 = state.isAdmin && state.adminTier === 10; if (state.ownedBrawlers.includes(b.id)) { state.currentBrawler = b.id; document.getElementById('charDisplay').textContent = b.icon; } else { if (!isAdmin10 && state.money < b.price) return playSound('hurt'); if(!isAdmin10) state.money -= b.price; state.ownedBrawlers.push(b.id); state.currentBrawler = b.id; document.getElementById('charDisplay').textContent = b.icon; updateMenuUI(); playSound('start'); } renderBrawlers(); }
-function updateMenuUI() { let isAdmin10 = state.isAdmin && state.adminTier === 10; document.getElementById('menuMoney').textContent = isAdmin10 ? '∞' : state.money; document.getElementById('menuBtc').textContent = isAdmin10 ? '∞' : state.btc; }
+function handleShopClick(item) {
+  playSound('click');
+  const isAdmin10 = state.isAdmin && state.adminTier === 10;
+  if (item.type === 'weapon') {
+    if (state.ownedWeapons.includes(item.id)) {
+      switchWeapon(item.id);
+      if(state.player) { state.player.ammo[item.id] = magOf(item.id); }
+    } else {
+      if (!isAdmin10 && state.money < item.price) return playSound('hurt');
+      if(!isAdmin10) state.money -= item.price;
+      state.ownedWeapons.push(item.id); switchWeapon(item.id);
+      if(state.player) { state.player.weapon = item.id; state.player.ammo[item.id] = magOf(item.id); }
+      playSound('buy');
+    }
+  }
+  updateMenuUI(); renderShop(); saveGame();
+}
+function handleUpgradeClick(key) {
+  playSound('click');
+  const isAdmin10 = state.isAdmin && state.adminTier === 10;
+  if (state.upgrades[key] >= UPGRADE_MAX) return;
+  if (!isAdmin10 && state.money < upgradePrice(key)) return playSound('hurt');
+  if(!isAdmin10) state.money -= upgradePrice(key);
+  state.upgrades[key]++;
+  if (key === 'hp' && state.player) { state.player.maxHp += 20; state.player.hp += 20; }
+  playSound('buy'); updateMenuUI(); renderShop(); updateHUD(); saveGame();
+}
+function handleCharacterClick(b) {
+  playSound('click');
+  const isAdmin10 = state.isAdmin && state.adminTier === 10;
+  if (state.ownedBrawlers.includes(b.id)) { state.currentBrawler = b.id; playSound('switch'); }
+  else {
+    if (!isAdmin10 && state.btc < b.price) return playSound('hurt');
+    if(!isAdmin10) state.btc -= b.price;
+    state.ownedBrawlers.push(b.id); state.currentBrawler = b.id; playSound('buy');
+  }
+  updateMenuUI(); renderCharacters(); saveGame();
+}
+function updateMenuUI() {
+  let isAdmin10 = state.isAdmin && state.adminTier === 10;
+  document.getElementById('menuMoney').textContent = isAdmin10 ? '∞' : state.money;
+  document.getElementById('menuBtc').textContent = isAdmin10 ? '∞' : state.btc;
+}
+function switchWeapon(id) {
+  if (!state.ownedWeapons.includes(id) || state.currentWeapon === id) return;
+  state.currentWeapon = id;
+  if (state.player) { state.player.weapon = id; state.player.reloading = false; }
+  playSound('switch'); updateHUD();
+}
 
+// --- OYUN AKIŞI ---
 function startGame() {
   try {
     initAudio(); state.phase = 'playing';
     document.getElementById('mainMenu').classList.remove('active'); document.getElementById('mainMenu').classList.add('hidden');
-    document.getElementById('pauseOverlay').classList.remove('active'); document.getElementById('pauseOverlay').classList.add('hidden');
-    document.getElementById('gameOverOverlay').classList.remove('active'); document.getElementById('gameOverOverlay').classList.add('hidden');
+    ['pauseOverlay','gameOverOverlay','shopOverlay'].forEach(id => { const el = document.getElementById(id); el.classList.remove('active'); el.classList.add('hidden'); });
     document.getElementById('hud').style.display = 'flex'; document.getElementById('controlsHint').style.display = state.isTouch ? 'none' : 'block';
     if(!state.isTouch) canvas.style.cursor = 'crosshair';
     let isAdmin10 = state.isAdmin && state.adminTier === 10;
     let isAdmin19 = state.isAdmin && state.adminTier > 0 && state.adminTier < 10;
     if(isAdmin10) { state.money = 999999999; state.btc = 999999999; }
     else if(isAdmin19) { state.money = state.adminTier * 100000; state.btc = state.adminTier * 10; }
-    const b = brawlers.find(x => x.id === state.currentBrawler);
-    if(!b) { alert("Karakter bulunamadı!"); return; }
-    const currentSkinObj = shopSkins.find(s => s.id === state.currentSkin);
-    const skinColor = currentSkinObj ? currentSkinObj.color : '#facc15';
+    const b = charById(state.currentBrawler);
+    const u = state.upgrades;
+    const maxHp = Math.round(100 * b.hpMul + 20 * u.hp);
     state.player = {
-      x: WORLD_W/2, y: WORLD_H/2, size: 26, vx: 0, vy: 0, friction: 0.85,
-      speed: 3.5 * b.speedMul, hp: 100 * b.hpMul, maxHp: 100 * b.hpMul,
-      angle: 0, walkAnim: 0, recoil: 0, dashing: 0, dashCd: 0, dashMax: 60,
+      x: WORLD_W/2, y: WORLD_H/2, vx: 0, vy: 0,
+      speed: 3.4 * b.speedMul * (1 + 0.08 * u.speed),
+      hp: maxHp, maxHp,
+      angle: 0, walkAnim: 0, recoil: 0, dashing: 0, dashCd: 0, dashCdMax: 60 * (b.dashCdMul || 1),
       weapon: state.currentWeapon, ammo: {}, reloading: false, reloadStart: 0, lastShot: 0,
-      carried: 0, dmgMul: b.dmgMul, brawler: state.currentBrawler, color: b.color,
-      skinColor: skinColor, speedMul: 1, shield: 0, magnet: 0, slowEnemies: 0, lifesteal: 0, crit: 1, regen: 0, drone: 0, fireRateMul: 1,
-      mpId: myPlayerId, isAdmin: state.isAdmin, adminTier: state.adminTier
+      carried: 0, dmgMul: b.dmgMul * (1 + 0.12 * u.dmg), char: b.id, look: b.look, scale: b.scale || 1,
+      regen: b.regen || 0, magnet: 22 + 26 * u.magnet,
+      mpId: myPlayerId
     };
-    Object.keys(weapons).forEach(w => state.player.ammo[w] = weapons[w].mag);
-    state.enemies = []; state.bullets = []; state.coins = []; state.particles = []; state.pickups = []; state.decorations = [];
-    if (state.isHost) { state.wave = 1; state.enemiesToSpawn = 5; state.spawnTimer = 0; }
+    WEAPON_LIST.forEach(w => state.player.ammo[w] = magOf(w));
+    state.enemies = []; state.bullets = []; state.coins = []; state.particles = []; state.pickups = []; state.btcs = []; state.texts = [];
+    if (!state.isMP || state.isHost) { state.wave = 1; }
     state.camera = {x: state.player.x - W/2, y: state.player.y - H/2};
     state.dropZone = {x: 100, y: WORLD_H-200, w: 150, h: 100};
     generateDecorations();
     for(let i=0; i<15; i++) spawnCoin();
-    if (state.isHost) startWave(); updateHUD(); playSound('wave');
+    if (!state.isMP || state.isHost) { state.enemiesToSpawn = 0; state.eliteToSpawn = 0; startWave(); }
+    updateHUD(); playSound('wave');
   } catch(err) { alert("Oyun başlatılırken bir hata oluştu: " + err.message); console.error(err); }
 }
 function pauseGame() { if(state.phase !== 'playing') return; state.phase = 'paused'; canvas.style.cursor = 'default'; const el = document.getElementById('pauseOverlay'); el.classList.remove('hidden'); el.classList.add('active'); playSound('click'); }
-function resumeGame() { if(state.phase !== 'paused') return; state.phase = 'playing'; if(!state.isTouch) canvas.style.cursor = 'crosshair'; const pauseEl = document.getElementById('pauseOverlay'); pauseEl.classList.add('hidden'); pauseEl.classList.remove('active'); const shopEl = document.getElementById('shopOverlay'); shopEl.classList.add('hidden'); shopEl.classList.remove('active'); playSound('click'); }
-function exitToMenu() { 
-  state.phase = 'menu'; canvas.style.cursor = 'default'; 
+function resumeGame() {
+  if(state.phase !== 'paused') return;
+  state.phase = 'playing'; if(!state.isTouch) canvas.style.cursor = 'crosshair';
+  ['pauseOverlay','shopOverlay'].forEach(id => { const el = document.getElementById(id); el.classList.add('hidden'); el.classList.remove('active'); });
+  playSound('click');
+}
+function exitToMenu() {
+  state.phase = 'menu'; canvas.style.cursor = 'default';
+  saveGame();
   if(state.isMP && db) {
     try {
-      if(state.isHost) db.ref('rooms/' + state.roomCode).remove(); 
+      if(state.isHost) db.ref('rooms/' + state.roomCode).remove();
       else db.ref('rooms/' + state.roomCode + '/guest').remove();
       state.isMP = false; state.isHost = false; state.remotePlayers = {}; state.guestName = null; state.hostName = null;
     } catch(e) {}
   }
   if(db && myPlayerId) db.ref('players_online/' + myPlayerId).update({ status: 'Menüde' });
-  ['pauseOverlay', 'gameOverOverlay', 'shopOverlay'].forEach(id => { const el = document.getElementById(id); el.classList.add('hidden'); el.classList.remove('active'); }); 
-  const mainEl = document.getElementById('mainMenu'); mainEl.classList.remove('hidden'); mainEl.classList.add('active'); document.getElementById('hud').style.display = 'none'; document.getElementById('controlsHint').style.display = 'none'; updateMenuUI(); playSound('click'); 
+  ['pauseOverlay', 'gameOverOverlay', 'shopOverlay'].forEach(id => { const el = document.getElementById(id); el.classList.add('hidden'); el.classList.remove('active'); });
+  const mainEl = document.getElementById('mainMenu'); mainEl.classList.remove('hidden'); mainEl.classList.add('active');
+  document.getElementById('hud').style.display = 'none'; document.getElementById('controlsHint').style.display = 'none';
+  updateMenuUI(); playSound('click');
 }
-function toggleShop() { if(state.phase === 'playing') { state.phase = 'paused'; renderShop(); openOverlay('shopOverlay'); playSound('click'); } else if(state.phase === 'paused' && document.getElementById('shopOverlay').classList.contains('active')) { closeOverlay('shopOverlay'); } }
-function generateDecorations() { for(let i=0; i<60; i++) { let x = 100 + Math.random()*(WORLD_W-200); let y = 100 + Math.random()*(WORLD_H-200); if(x > 50 && x < 250 && y > WORLD_H-250 && y < WORLD_H-50) continue; let type = 'building'; if(state.map === 'forest') type = Math.random() < 0.7 ? 'tree' : 'rock'; else if(state.map === 'desert') type = Math.random() < 0.6 ? 'cactus' : 'pyramid'; else if(state.map === 'snow') type = Math.random() < 0.6 ? 'pine' : 'igloo'; else if(state.map === 'lava') type = Math.random() < 0.5 ? 'volcano' : 'jagged_rock'; state.decorations.push({x, y, w:60, h:100, type}); } }
-function spawnCoin() { const r = Math.random(); let tIdx = 0; if(r < 0.01) tIdx = 5; else if(r < 0.05) tIdx = 4; else if(r < 0.15) tIdx = 3; else if(r < 0.4) tIdx = 2; else if(r < 0.7) tIdx = 1; const t = coinTypes[tIdx]; state.coins.push({x: 100+Math.random()*(WORLD_W-200), y: 100+Math.random()*(WORLD_H-200), r: t.r, bob: Math.random()*Math.PI*2, collected: false, color: t.color, darkColor: t.darkColor, value: t.value, glow: t.glow}); }
-function spawnEnemy() { let x = Math.random() * WORLD_W; let y = Math.random() < 0.5 ? -30 : WORLD_H + 30; if(Math.random() < 0.5) { y = Math.random() * WORLD_H; x = Math.random() < 0.5 ? -30 : WORLD_W + 30; } let type = 'walker'; if(state.wave > 2 && Math.random() < 0.3) type = 'runner'; if(state.wave > 4 && Math.random() < 0.15) type = 'tank'; let stats = {r:16, speed:1.2, hp:30, dmg:10, color:'#4d7c0f'}; if(type === 'runner') stats = {r:12, speed:2.8, hp:15, dmg:8, color:'#1e3a8a'}; if(type === 'tank') stats = {r:24, speed:0.8, hp:120, dmg:20, color:'#7c2d12'}; state.enemies.push({x, y, ...stats, type, maxHp:stats.hp, angle:0, bob:Math.random()*Math.PI*2, knockX:0, knockY:0, hitFlash:0}); }
-function startWave() { state.enemiesToSpawn = 5 + state.wave * 3; state.spawnTimer = 0; playSound('wave'); }
+function toggleShop() {
+  if(state.phase === 'playing') { state.phase = 'paused'; renderShop(); openOverlay('shopOverlay'); playSound('click'); }
+  else if(state.phase === 'paused' && document.getElementById('shopOverlay').classList.contains('active')) { closeOverlay('shopOverlay'); }
+}
 
+// --- DÜNYA ÜRETİMİ ---
+function generateDecorations() {
+  state.decorations = [];
+  for(let i=0; i<60; i++) {
+    let x = 100 + Math.random()*(WORLD_W-200); let y = 100 + Math.random()*(WORLD_H-200);
+    if(x > 50 && x < 300 && y > WORLD_H-300 && y < WORLD_H-50) continue;
+    let type = 'building';
+    if(state.map === 'forest') type = Math.random() < 0.7 ? 'tree' : 'rock';
+    else if(state.map === 'desert') type = Math.random() < 0.6 ? 'cactus' : 'pyramid';
+    else if(state.map === 'snow') type = Math.random() < 0.6 ? 'pine' : 'igloo';
+    else if(state.map === 'lava') type = Math.random() < 0.5 ? 'volcano' : 'jagged_rock';
+    state.decorations.push({x, y, w:60, h:100, type});
+  }
+}
+function spawnCoin() {
+  const r = Math.random(); let tIdx = 0;
+  if(r < 0.01) tIdx = 5; else if(r < 0.05) tIdx = 4; else if(r < 0.15) tIdx = 3; else if(r < 0.4) tIdx = 2; else if(r < 0.7) tIdx = 1;
+  const t = coinTypes[tIdx];
+  state.coins.push({x: 100+Math.random()*(WORLD_W-200), y: 100+Math.random()*(WORLD_H-200), r: t.r, bob: Math.random()*Math.PI*2, collected: false, color: t.color, darkColor: t.darkColor, value: t.value, glow: t.glow});
+}
+function spawnEnemy(forceElite) {
+  let x = Math.random() * WORLD_W; let y = Math.random() < 0.5 ? -30 : WORLD_H + 30;
+  if(Math.random() < 0.5) { y = Math.random() * WORLD_H; x = Math.random() < 0.5 ? -30 : WORLD_W + 30; }
+  let type = 'walker';
+  if(!forceElite) {
+    if(state.wave > 2 && Math.random() < Math.min(0.35, 0.2 + state.wave * 0.01)) type = 'runner';
+    if(state.wave > 4 && Math.random() < Math.min(0.25, 0.1 + state.wave * 0.01)) type = 'tank';
+  }
+  const scale = 1 + (state.wave - 1) * 0.15;
+  let stats = {r:16, speed:1.15, hp:30, dmg:8, color:'#5a7d3a'};
+  if(type === 'runner') stats = {r:12, speed:2.7, hp:15, dmg:6, color:'#2f6f6f'};
+  if(type === 'tank') stats = {r:24, speed:0.75, hp:120, dmg:16, color:'#7c4a2d'};
+  if(forceElite) { type = 'elite'; stats = {r:19, speed:1.45, hp:150, dmg:14, color:'#d4a017'}; }
+  state.enemies.push({x, y, ...stats, hp: Math.round(stats.hp * scale), type, maxHp: Math.round(stats.hp * scale), angle:0, bob:Math.random()*Math.PI*2, knockX:0, knockY:0, hitFlash:0, atkCd:0});
+}
+function startWave() {
+  state.enemiesToSpawn = 6 + state.wave * 3;
+  state.eliteToSpawn = (state.wave >= 4 && state.wave % 2 === 0) ? 1 + Math.floor(state.wave / 8) : 0;
+  state.spawnTimer = 0; state.waveTimer = 0;
+  state.banner = { text: 'DALGA ' + state.wave, sub: state.eliteToSpawn > 0 ? 'Altın Zombi geliyor!' : 'Hazır ol!', t: 150 };
+  playSound('wave');
+}
+function addText(x, y, str, color) {
+  if (state.texts.length > 50) state.texts.shift();
+  state.texts.push({x, y, str, color: color || '#fff', life: 40});
+}
+
+// --- SİLAH / ATEŞ ---
 function shoot() {
   const p = state.player; const w = weapons[p.weapon];
-  p.recoil = 4; state.shake = w.bullets > 1 ? 3 : 1; playSound('shoot');
-  for(let i=0; i<5; i++) state.particles.push({x: p.x + Math.cos(p.angle)*25, y: p.y + Math.sin(p.angle)*25, vx: Math.cos(p.angle)*4+(Math.random()-0.5)*3, vy: Math.sin(p.angle)*4+(Math.random()-0.5)*3, life: 10, color: '#facc15'});
-  if(state.isMP && !state.isHost && db) { 
-    try { db.ref('rooms/' + state.roomCode + '/events/guestShoot').set({ x: p.x, y: p.y, angle: p.angle, weapon: p.weapon, color: p.skinColor || w.color }); } catch(e) {}
-    return; 
+  p.recoil = 5; state.shake = w.bullets > 1 ? 3 : (w.kind === 'rocket' ? 4 : 1.2); playSound('shoot');
+  for(let i=0; i<5; i++) state.particles.push({x: p.x + Math.cos(p.angle)*28, y: p.y + Math.sin(p.angle)*28, vx: Math.cos(p.angle)*4+(Math.random()-0.5)*3, vy: Math.sin(p.angle)*4+(Math.random()-0.5)*3, life: 10, color: '#fde047', maxLife: 10});
+  if(state.isMP && !state.isHost && db) {
+    try { db.ref('rooms/' + state.roomCode + '/events/guestShoot').set({ x: p.x, y: p.y, angle: p.angle, weapon: p.weapon }); } catch(e) {}
+    return;
   }
-  for(let i=0; i<w.bullets; i++) { const spread = (Math.random()-0.5) * w.spread * 2; const ang = p.angle + spread + (i - w.bullets/2 + 0.5) * 0.05; state.bullets.push({ x: p.x + Math.cos(p.angle)*25, y: p.y + Math.sin(p.angle)*25, vx: Math.cos(ang)*w.speed, vy: Math.sin(ang)*w.speed, r: 4, dmg: w.dmg * p.dmgMul, life: 60, color: p.skinColor || w.color, knock: w.knock, owner: p.mpId }); }
+  for(let i=0; i<w.bullets; i++) {
+    const spread = (Math.random()-0.5) * w.spread * 2; const ang = p.angle + spread + (i - w.bullets/2 + 0.5) * 0.05;
+    state.bullets.push({ x: p.x + Math.cos(p.angle)*25, y: p.y + Math.sin(p.angle)*25, vx: Math.cos(ang)*w.speed, vy: Math.sin(ang)*w.speed, r: w.kind === 'rocket' ? 6 : 4, dmg: w.dmg * p.dmgMul, life: 60, color: w.color, knock: w.knock, kind: w.kind, pierce: w.pierce || 0, aoe: w.aoe || 0, hits: [] });
+  }
+}
+function explode(b) {
+  playSound('boom'); state.shake = 7;
+  for(let i=0; i<24; i++) state.particles.push({x: b.x, y: b.y, vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8, life: 25, color: Math.random() < 0.5 ? '#f97316' : '#facc15', maxLife: 25});
+  state.enemies.forEach(e => {
+    const d = Math.hypot(e.x-b.x, e.y-b.y);
+    if(d < b.aoe) {
+      const f = 1 - d/b.aoe;
+      e.hp -= b.dmg * f; e.hitFlash = 6;
+      const ang = Math.atan2(e.y-b.y, e.x-b.x); e.knockX += Math.cos(ang)*6*f; e.knockY += Math.sin(ang)*6*f;
+      addText(e.x, e.y - e.r - 6, Math.round(b.dmg * f), '#f97316');
+    }
+  });
 }
 
+// --- GÜNCELLEME ---
 function updatePlayer() {
   const p = state.player; let ax=0, ay=0;
-  if(state.isTouch) { if(state.touchControls.left.active) { ax = state.touchControls.left.dx; ay = state.touchControls.left.dy; const len = Math.hypot(ax, ay); if(len > 1) { ax/=len; ay/=len; } } } 
+  if(state.isTouch) { if(state.touchControls.left.active) { ax = state.touchControls.left.dx; ay = state.touchControls.left.dy; const len = Math.hypot(ax, ay); if(len > 1) { ax/=len; ay/=len; } } }
   else { if(state.keys['w']) ay -= 1; if(state.keys['s']) ay += 1; if(state.keys['a']) ax -= 1; if(state.keys['d']) ax += 1; }
-  if(ax||ay){ const len = Math.hypot(ax,ay); ax/=len; ay/=len; p.vx += ax * 0.5 * p.speedMul; p.vy += ay * 0.5 * p.speedMul; p.walkAnim += 0.25; } else { p.vx *= 0.85; p.vy *= 0.85; }
-  if(p.dashing > 0){ p.vx *= 1.15; p.vy *= 1.15; p.dashing--; }
-  const speed = Math.hypot(p.vx, p.vy); const maxS = p.dashing > 0 ? 10.5 : 4.5 * p.speedMul;
+  if(ax||ay){ const len = Math.hypot(ax,ay); ax/=len; ay/=len; p.vx += ax * 0.5; p.vy += ay * 0.5; p.walkAnim += 0.25; } else { p.vx *= 0.85; p.vy *= 0.85; }
+  if(p.dashing > 0){
+    p.vx *= 1.15; p.vy *= 1.15; p.dashing--;
+    state.particles.push({x: p.x, y: p.y, vx: 0, vy: 0, life: 12, color: 'rgba(255,255,255,0.6)', maxLife: 12, ghost: true});
+  }
+  const speed = Math.hypot(p.vx, p.vy); const maxS = p.dashing > 0 ? 10.5 : 4.5 * p.speed;
   if(speed > maxS){ p.vx = (p.vx/speed)*maxS; p.vy = (p.vy/speed)*maxS; }
   p.x += p.vx; p.y += p.vy; p.x = Math.max(20, Math.min(WORLD_W-20, p.x)); p.y = Math.max(20, Math.min(WORLD_H-20, p.y));
   state.decorations.forEach(d => { let dx = p.x - d.x, dy = p.y - d.y; let dist = Math.hypot(dx, dy); let r = d.type === 'volcano' ? 55 : (d.type === 'pyramid' ? 60 : 25); if(dist < r + 15 && dist > 0) { p.x = d.x + (dx/dist) * (r + 15); p.y = d.y + (dy/dist) * (r + 15); p.vx *= 0.5; p.vy *= 0.5; } });
   state.camera.x += ((p.x - W/2) - state.camera.x) * 0.1; state.camera.y += ((p.y - H/2) - state.camera.y) * 0.1;
   state.camera.x = Math.max(0, Math.min(WORLD_W - W, state.camera.x)); state.camera.y = Math.max(0, Math.min(WORLD_H - H, state.camera.y));
-  if(state.isTouch && state.touchControls.right.active) { p.angle = Math.atan2(state.touchControls.right.dy, state.touchControls.right.dx); } 
+  if(state.isTouch && state.touchControls.right.active) { p.angle = Math.atan2(state.touchControls.right.dy, state.touchControls.right.dx); }
   else if(!state.isTouch) { const worldMouseX = state.mouse.x + state.camera.x; const worldMouseY = state.mouse.y + state.camera.y; p.angle = Math.atan2(worldMouseY - p.y, worldMouseX - p.x); }
-  if(p.isAdmin && p.adminTier === 10) { p.reloading = false; p.ammo[p.weapon] = weapons[p.weapon].mag; } 
-  else { if(p.reloading && Date.now() - p.reloadStart > weapons[p.weapon].reloadTime) { p.ammo[p.weapon] = weapons[p.weapon].mag; p.reloading = false; playSound('reload'); } }
+  const w = weapons[p.weapon];
+  if(p.reloading && Date.now() - p.reloadStart > reloadTimeOf(p.weapon)) { p.ammo[p.weapon] = magOf(p.weapon); p.reloading = false; playSound('reload'); }
   let isFiring = state.isTouch ? state.touchControls.right.active : state.mouse.down;
-  if(isFiring && !p.reloading && Date.now() - p.lastShot > weapons[p.weapon].cd) { if(p.ammo[p.weapon] > 0) { shoot(); p.ammo[p.weapon]--; p.lastShot = Date.now(); } else { p.reloading = true; p.reloadStart = Date.now(); playSound('reload'); } }
-  if(p.dashCd > 0) p.dashCd--; if(p.recoil > 0) p.recoil *= 0.85; if(p.shield > 0) p.shield--; if(p.magnet > 0) p.magnet--;
+  if(isFiring && !p.reloading && Date.now() - p.lastShot > w.cd) {
+    if(p.ammo[p.weapon] > 0) { shoot(); p.ammo[p.weapon]--; p.lastShot = Date.now(); }
+    else { playSound('empty'); p.reloading = true; p.reloadStart = Date.now(); playSound('reload'); }
+  }
+  if(p.dashCd > 0) p.dashCd--; if(p.recoil > 0) p.recoil *= 0.82;
+  if(p.regen > 0 && p.hp < p.maxHp) p.hp = Math.min(p.maxHp, p.hp + p.regen / 60);
   if(p.hp < 30) state.lowHpEffect = 1; else state.lowHpEffect = 0;
+  if(state.flash > 0) state.flash -= 0.06;
 }
 
 function update() {
   if (state.phase !== 'playing') return;
   state.time++; updatePlayer(); const p = state.player;
+  if(state.banner) { state.banner.t--; if(state.banner.t <= 0) state.banner = null; }
   if(!state.isMP || state.isHost) {
+    // mermiler
     state.bullets = state.bullets.filter(b => {
       b.x += b.vx; b.y += b.vy; b.life--;
-      if(b.life <= 0 || b.x < 0 || b.x > WORLD_W || b.y < 0 || b.y > WORLD_H) return false;
-      for(let e of state.enemies){ if(Math.hypot(b.x-e.x, b.y-e.y) < e.r + b.r){ e.hp -= b.dmg; e.hitFlash = 5; e.knockX += b.vx * 0.5 * b.knock; e.knockY += b.vy * 0.5 * b.knock; state.shake = 2; playSound('hit'); for(let i=0; i<5; i++) state.particles.push({x:e.x, y:e.y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, life:20, color:'#dc2626'}); return false; } }
+      if(b.life <= 0 || b.x < 0 || b.x > WORLD_W || b.y < 0 || b.y > WORLD_H) { if(b.aoe) explode(b); return false; }
+      for(let e of state.enemies){
+        if(Math.hypot(b.x-e.x, b.y-e.y) < e.r + b.r && !(b.hits && b.hits.includes(e))) {
+          if(b.aoe) { explode(b); return false; }
+          e.hp -= b.dmg; e.hitFlash = 6; e.knockX += b.vx * 0.4 * b.knock; e.knockY += b.vy * 0.4 * b.knock;
+          state.shake = Math.max(state.shake, 1.5); playSound('hit');
+          addText(e.x, e.y - e.r - 6, Math.round(b.dmg), '#fff');
+          for(let i=0; i<5; i++) state.particles.push({x:e.x, y:e.y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, life:20, color:'#b91c1c', maxLife:20});
+          if(b.pierce > 0) { b.pierce--; if(!b.hits) b.hits = []; b.hits.push(e); return true; }
+          return false;
+        }
+      }
       return true;
     });
+    // zombiler
     state.enemies = state.enemies.filter(e => {
-      e.bob += e.type === 'runner' ? 0.2 : 0.1; e.knockX *= 0.8; e.knockY *= 0.8;
+      e.bob += e.type === 'runner' ? 0.24 : 0.1; e.knockX *= 0.8; e.knockY *= 0.8;
+      if(e.atkCd > 0) e.atkCd--;
       let target = p; let minDist = Math.hypot(p.x-e.x, p.y-e.y);
       for(let id in state.remotePlayers) { let rp = state.remotePlayers[id]; let d = Math.hypot(rp.x-e.x, rp.y-e.y); if(d < minDist) { minDist = d; target = rp; } }
       const ang = Math.atan2(target.y - e.y, target.x - e.x); e.angle = ang;
       e.x += Math.cos(ang) * e.speed + e.knockX; e.y += Math.sin(ang) * e.speed + e.knockY;
       if(e.hitFlash > 0) e.hitFlash--;
       state.decorations.forEach(d => { let dx = e.x - d.x, dy = e.y - d.y; let dist = Math.hypot(dx, dy); let r = d.type === 'volcano' ? 55 : (d.type === 'pyramid' ? 60 : 25); if(dist < r + e.r && dist > 0) { e.x = d.x + (dx/dist) * (r + e.r); e.y = d.y + (dy/dist) * (r + e.r); } });
-      if(Math.hypot(p.x-e.x, p.y-e.y) < e.r + 15){ if(p.shield <= 0) { p.hp -= e.dmg * 0.05; state.shake = 4; playSound('hurt'); if(p.hp <= 0) gameOver(); } }
-      if(e.hp <= 0){ state.shake = 5; playSound('zombie_death'); if(Math.random() < 0.8) { const t = coinTypes[0]; state.pickups.push({x:e.x, y:e.y, r: t.r, bob:0, color: t.color, darkColor: t.darkColor, value: t.value}); } for(let i=0; i<15; i++) state.particles.push({x:e.x, y:e.y, vx:(Math.random()-0.5)*6, vy:(Math.random()-0.5)*6, life:30, color:'#dc2626'}); return false; }
+      if(Math.hypot(p.x-e.x, p.y-e.y) < e.r + 14 * p.scale && e.atkCd <= 0) {
+        e.atkCd = 45; p.hp -= e.dmg; state.shake = 4; state.flash = 1; playSound('hurt');
+        const push = Math.atan2(p.y - e.y, p.x - e.x); p.vx += Math.cos(push) * 3; p.vy += Math.sin(push) * 3;
+        if(p.hp <= 0) { gameOver(); return true; }
+      }
+      if(e.hp <= 0){
+        state.shake = 5; playSound(e.type === 'elite' ? 'elite' : 'zombie_death');
+        if(e.type === 'elite') {
+          state.btcs.push({x: e.x - 10, y: e.y, r: 10, bob: 0, collected: false});
+          state.btcs.push({x: e.x + 10, y: e.y + 6, r: 10, bob: 1, collected: false});
+          const t = coinTypes[2]; state.pickups.push({x: e.x, y: e.y - 12, r: t.r, bob: 0, color: t.color, darkColor: t.darkColor, value: t.value});
+        } else if(Math.random() < 0.8) {
+          let tIdx = 0; const r = Math.random();
+          if(e.type === 'tank') tIdx = r < 0.3 ? 2 : 1; else if(e.type === 'runner') tIdx = r < 0.3 ? 1 : 0; else tIdx = r < 0.12 ? 1 : 0;
+          const t = coinTypes[tIdx];
+          state.pickups.push({x: e.x, y: e.y, r: t.r, bob: 0, color: t.color, darkColor: t.darkColor, value: t.value});
+        }
+        if(e.type !== 'elite' && Math.random() < 0.04) state.pickups.push({x: e.x + 14, y: e.y, r: 10, bob: 0, color: '#f8fafc', darkColor: '#dc2626', value: 0, medkit: true});
+        for(let i=0; i<15; i++) state.particles.push({x:e.x, y:e.y, vx:(Math.random()-0.5)*6, vy:(Math.random()-0.5)*6, life:30, color:'#b91c1c', maxLife:30});
+        return false;
+      }
       return true;
     });
-    state.coins.forEach(c => { c.bob += 0.08; if(!c.collected && Math.hypot(p.x-c.x, p.y-c.y) < 20) { c.collected = true; p.carried += c.value; playSound('coin'); for(let i=0; i<6; i++) state.particles.push({x:c.x, y:c.y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, life:20, color:c.color}); } });
+    // para / iksir / btc
+    state.coins.forEach(c => { c.bob += 0.08; if(!c.collected && Math.hypot(p.x-c.x, p.y-c.y) < p.magnet) { c.collected = true; p.carried += c.value; playSound('coin'); for(let i=0; i<6; i++) state.particles.push({x:c.x, y:c.y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, life:20, color:c.color, maxLife:20}); } });
     state.coins = state.coins.filter(c => !c.collected); if(state.coins.length < 15) spawnCoin();
-    state.pickups = state.pickups.filter(pk => { pk.bob += 0.1; if(!pk.collected && Math.hypot(p.x-pk.x, p.y-pk.y) < 20) { pk.collected = true; p.carried += pk.value; playSound('coin'); return false; } return true; });
-    const dz = state.dropZone; if(p.carried > 0 && p.x > dz.x && p.x < dz.x+dz.w && p.y > dz.y && p.y < dz.y+dz.h){ state.money += p.carried; p.carried = 0; playSound('wave'); }
-    if(state.enemiesToSpawn > 0){ state.spawnTimer--; if(state.spawnTimer <= 0){ spawnEnemy(); state.enemiesToSpawn--; state.spawnTimer = 60; } } else if(state.enemies.length === 0){ state.waveTimer++; if(state.waveTimer > 120){ state.wave++; startWave(); state.waveTimer = 0; } }
+    state.pickups = state.pickups.filter(pk => {
+      pk.bob += 0.1;
+      if(!pk.collected && Math.hypot(p.x-pk.x, p.y-pk.y) < p.magnet) {
+        pk.collected = true;
+        if(pk.medkit) { p.hp = Math.min(p.maxHp, p.hp + 25); playSound('heal'); addText(p.x, p.y - 30, '+25 CAN', '#4ade80'); }
+        else { p.carried += pk.value; playSound('coin'); }
+        return false;
+      }
+      return true;
+    });
+    state.btcs = state.btcs.filter(b => {
+      b.bob += 0.1;
+      if(!b.collected && Math.hypot(p.x-b.x, p.y-b.y) < p.magnet) {
+        b.collected = true; state.btc++; playSound('buy'); addText(p.x, p.y - 30, '+1 BTC', '#f7931a');
+        if(state.isMP) updateMenuUI();
+        return false;
+      }
+      return true;
+    });
+    const dz = state.dropZone;
+    if(p.carried > 0 && p.x > dz.x && p.x < dz.x+dz.w && p.y > dz.y && p.y < dz.y+dz.h) {
+      addText(p.x, p.y - 36, '+' + p.carried + ' TL', '#facc15');
+      state.money += p.carried; p.carried = 0; playSound('buy'); saveGame();
+    }
+    if(state.enemiesToSpawn > 0 || state.eliteToSpawn > 0) {
+      state.spawnTimer--;
+      if(state.spawnTimer <= 0) {
+        if(state.eliteToSpawn > 0 && (state.enemiesToSpawn <= 2 || Math.random() < 0.25)) { spawnEnemy(true); state.eliteToSpawn--; }
+        else if(state.enemiesToSpawn > 0) { spawnEnemy(false); state.enemiesToSpawn--; }
+        state.spawnTimer = Math.max(28, 62 - state.wave * 2);
+      }
+    } else if(state.enemies.length === 0) {
+      state.waveTimer++;
+      if(state.waveTimer > 130){ state.waveTimer = 0; state.wave++; startWave(); if(state.isMP) saveGame(); }
+    }
+    // hortlak homurtusu
+    state.groanTimer--;
+    if(state.groanTimer <= 0 && state.enemies.length > 0) { playSound('groan'); state.groanTimer = 240 + Math.random() * 300; }
   } else {
-    state.coins.forEach(c => { if(!c.collected && Math.hypot(p.x-c.x, p.y-c.y) < 20) { if(db) try { db.ref('rooms/' + state.roomCode + '/events/guestPickup').push({ type: 'coin', x: c.x, y: c.y }); } catch(e) {} c.collected = true; p.carried += c.value; playSound('coin'); for(let i=0; i<6; i++) state.particles.push({x:c.x, y:c.y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, life:20, color:c.color}); } });
-    state.pickups.forEach(pk => { if(!pk.collected && Math.hypot(p.x-pk.x, p.y-pk.y) < 20) { if(db) try { db.ref('rooms/' + state.roomCode + '/events/guestPickup').push({ type: 'pickup', x: pk.x, y: pk.y }); } catch(e) {} pk.collected = true; p.carried += pk.value; playSound('coin'); } });
+    state.coins.forEach(c => { if(!c.collected && Math.hypot(p.x-c.x, p.y-c.y) < p.magnet) { if(db) try { db.ref('rooms/' + state.roomCode + '/events/guestPickup').push({ type: 'coin', x: c.x, y: c.y }); } catch(e) {} c.collected = true; p.carried += c.value; playSound('coin'); for(let i=0; i<6; i++) state.particles.push({x:c.x, y:c.y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, life:20, color:c.color, maxLife:20}); } });
+    state.pickups.forEach(pk => {
+      if(!pk.collected && Math.hypot(p.x-pk.x, p.y-pk.y) < p.magnet) {
+        if(db) try { db.ref('rooms/' + state.roomCode + '/events/guestPickup').push({ type: 'pickup', x: pk.x, y: pk.y }); } catch(e) {}
+        pk.collected = true;
+        if(pk.medkit) { p.hp = Math.min(p.maxHp, p.hp + 25); playSound('heal'); }
+        else { p.carried += pk.value; playSound('coin'); }
+      }
+    });
+    state.btcs.forEach(b => {
+      if(!b.collected && Math.hypot(p.x-b.x, p.y-b.y) < p.magnet) {
+        if(db) try { db.ref('rooms/' + state.roomCode + '/events/guestPickup').push({ type: 'btc', x: b.x, y: b.y }); } catch(e) {}
+        b.collected = true; state.btc++; playSound('buy');
+      }
+    });
+    const dz = state.dropZone;
+    if(p.carried > 0 && p.x > dz.x && p.x < dz.x+dz.w && p.y > dz.y && p.y < dz.y+dz.h) { addText(p.x, p.y - 36, '+' + p.carried + ' TL', '#facc15'); state.money += p.carried; p.carried = 0; playSound('buy'); saveGame(); }
   }
-  state.particles = state.particles.filter(pt => { pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.1; pt.life--; return pt.life > 0; });
+  state.particles = state.particles.filter(pt => { pt.x += pt.vx; pt.y += pt.vy; if(!pt.ghost) pt.vy += 0.1; pt.life--; return pt.life > 0; });
+  state.texts = state.texts.filter(t => { t.y -= 0.5; t.life--; return t.life > 0; });
   if(state.shake > 0) state.shake *= 0.9; updateHUD();
   if(state.isMP && state.time % 6 === 0) broadcastState();
 }
 
-function updateHUD() { 
-  const p = state.player; let isAdmin10 = state.isAdmin && state.adminTier === 10;
-  document.getElementById('hpText').textContent = Math.ceil(p.hp); 
-  document.getElementById('moneyText').textContent = isAdmin10 ? '∞' : state.money; 
-  document.getElementById('btcText').textContent = isAdmin10 ? '∞' : state.btc; 
-  document.getElementById('waveText').textContent = state.wave; 
-  document.getElementById('weaponName').textContent = weapons[p.weapon].name; 
-  if(p.reloading) document.getElementById('ammoText').textContent = 'DOLDURULUYOR'; 
-  else document.getElementById('ammoText').textContent = isAdmin10 ? '∞' : `${p.ammo[p.weapon]}/${weapons[p.weapon].mag}`; 
+function updateHUD() {
+  const p = state.player; if(!p) return;
+  let isAdmin10 = state.isAdmin && state.adminTier === 10;
+  document.getElementById('hpText').textContent = Math.max(0, Math.ceil(p.hp));
+  document.getElementById('moneyText').textContent = isAdmin10 ? '∞' : state.money;
+  document.getElementById('btcText').textContent = isAdmin10 ? '∞' : state.btc;
+  document.getElementById('waveText').textContent = state.wave;
+  document.getElementById('weaponName').textContent = weapons[p.weapon].name;
+  document.getElementById('ammoText').textContent = p.reloading ? 'DOLDURULUYOR' : (isAdmin10 ? '∞' : `${p.ammo[p.weapon]}/${magOf(p.weapon)}`);
+  const cb = document.getElementById('carryBox');
+  if(p.carried > 0) { cb.style.display = 'flex'; document.getElementById('carryText').textContent = p.carried; } else cb.style.display = 'none';
 }
-function gameOver() { state.phase = 'gameover'; canvas.style.cursor = 'default'; document.getElementById('finalMoney').textContent = state.money; document.getElementById('finalBtc').textContent = state.btc; document.getElementById('finalWave').textContent = state.wave; const el = document.getElementById('gameOverOverlay'); el.classList.remove('hidden'); el.classList.add('active'); playSound('hurt'); }
+function gameOver() {
+  state.phase = 'gameover'; canvas.style.cursor = 'default';
+  saveGame();
+  document.getElementById('finalMoney').textContent = state.money;
+  document.getElementById('finalBtc').textContent = state.btc;
+  document.getElementById('finalWave').textContent = state.wave;
+  const el = document.getElementById('gameOverOverlay'); el.classList.remove('hidden'); el.classList.add('active');
+  playSound('hurt');
+}
+function mobileReload() { if(state.phase === 'playing' && state.player && !state.player.reloading) { state.player.reloading = true; state.player.reloadStart = Date.now(); playSound('reload'); } }
+function mobileDash() { if(state.phase === 'playing' && state.player && state.player.dashCd <= 0) { state.player.dashing = 10; state.player.dashCd = state.player.dashCdMax; playSound('dash'); } }
+</script>
+<script>
+// --- ÇİZİM YARDIMCILARI ---
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x+r, y); c.arcTo(x+w, y, x+w, y+h, r); c.arcTo(x+w, y+h, x, y+h, r); c.arcTo(x, y+h, x, y, r); c.arcTo(x, y, x+w, y, r); c.closePath(); }
+function shade(hex, amt) {
+  try {
+    const n = parseInt(hex.slice(1), 16);
+    let r = Math.max(0, Math.min(255, (n >> 16) + amt));
+    let g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amt));
+    let b = Math.max(0, Math.min(255, (n & 255) + amt));
+    return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+  } catch(e) { return hex; }
+}
 
-function drawPlayer() {
-  const p = state.player; const brawlerIdx = parseInt(p.brawler.substring(1)); const classType = brawlerIdx % 10; const walkBob = Math.sin(p.walkAnim) * 2;
-  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(p.x, p.y + 16, 14, 5, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#2d3748'; ctx.fillRect(p.x - 5, p.y + 6, 4, 10 + walkBob); ctx.fillRect(p.x + 1, p.y + 6, 4, 10 - walkBob);
-  ctx.fillStyle = '#1a202c'; ctx.fillRect(p.x - 6, p.y + 16 + walkBob, 6, 3); ctx.fillRect(p.x, p.y + 16 - walkBob, 6, 3);
-  ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 11, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.arc(p.x - 3, p.y - 3, 4, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#e2b04a'; ctx.beginPath(); ctx.arc(p.x, p.y - 4 - walkBob, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#4a5568'; ctx.beginPath(); ctx.arc(p.x, p.y - 5 - walkBob, 7, Math.PI, 0); ctx.fill(); ctx.stroke();
-  ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.translate(-p.recoil, 0);
-  if (classType === 0) { ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(-8, 0, 9, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = '#d1d5db'; ctx.fillRect(8, -1.5, 18, 3); ctx.fillStyle = '#9ca3af'; ctx.fillRect(24, -3, 4, 6); ctx.fillStyle = '#78350f'; ctx.fillRect(4, -3, 5, 6); } 
-  else if (classType === 1) { ctx.fillStyle = '#78350f'; ctx.fillRect(8, -3, 15, 6); ctx.fillStyle = '#4b5563'; ctx.fillRect(23, -8, 10, 16); ctx.strokeRect(23, -8, 10, 16); } 
-  else if (classType === 2 || classType === 3) { ctx.strokeStyle = '#78350f'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(12, 0, 12, -Math.PI/2, Math.PI/2); ctx.stroke(); ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(12, -12); ctx.lineTo(12, 12); ctx.stroke(); } 
-  else if (classType === 4) { ctx.fillStyle = '#d1d5db'; ctx.fillRect(8, -5, 12, 2); ctx.fillRect(8, 3, 12, 2); ctx.fillStyle = '#78350f'; ctx.fillRect(6, -6, 3, 4); ctx.fillRect(6, 2, 3, 4); } 
-  else if (classType === 5 || classType === 8) { ctx.fillStyle = '#78350f'; ctx.fillRect(8, -2, 20, 4); ctx.fillStyle = classType === 5 ? '#a855f7' : '#f97316'; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(28, 0, 6, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; } 
-  else if (classType === 6) { ctx.fillStyle = '#78350f'; ctx.fillRect(8, -2, 25, 4); ctx.fillStyle = '#ccc'; ctx.beginPath(); ctx.moveTo(33, -5); ctx.lineTo(43, 0); ctx.lineTo(33, 5); ctx.fill(); ctx.stroke(); } 
-  else { ctx.fillStyle = '#374151'; ctx.fillRect(8, -4, 20, 8); ctx.fillStyle = '#111827'; ctx.fillRect(24, -3, 8, 4); ctx.strokeRect(8, -4, 20, 8); }
+// --- SİLAH ÇİZİMİ (karakterin elinde / markette) ---
+function drawWeaponSprite(c, kind) {
+  if (kind === 'pistol') {
+    c.fillStyle = '#334155'; rr(c, 6, -2, 13, 4, 1); c.fill();
+    c.fillStyle = '#1e293b'; rr(c, 5, 1, 4.5, 6, 1); c.fill();
+    c.fillStyle = '#94a3b8'; c.fillRect(17, -1.2, 3, 2.4);
+  } else if (kind === 'smg') {
+    c.fillStyle = '#3f3f46'; rr(c, 5, -2.5, 16, 5, 1.5); c.fill();
+    c.fillStyle = '#27272a'; rr(c, 11, 2, 4, 7, 1); c.fill();
+    c.fillRect(21, -1.5, 6, 3);
+    c.fillStyle = '#f97316'; rr(c, 8, -4.2, 5, 1.8, 0.6); c.fill();
+  } else if (kind === 'shotgun') {
+    c.fillStyle = '#57534e'; rr(c, 6, -2, 24, 3.6, 1); c.fill();
+    c.fillStyle = '#78350f'; rr(c, 2, -2.5, 7, 5, 1.5); c.fill();
+    c.fillStyle = '#92400e'; rr(c, 13, 1.6, 7, 3, 1.2); c.fill();
+    c.fillStyle = '#111827'; c.fillRect(29, -1.4, 3, 2.8);
+  } else if (kind === 'rifle') {
+    c.fillStyle = '#3f3f46'; rr(c, 4, -2.5, 21, 5, 1.5); c.fill();
+    c.fillStyle = '#27272a'; rr(c, 12, 2.2, 4, 7, 1); c.fill();
+    c.fillRect(25, -1.5, 7, 3);
+    c.fillStyle = '#84cc16'; rr(c, 7, -4.2, 4, 1.8, 0.5); c.fill();
+    c.fillStyle = '#18181b'; rr(c, 1, -2, 4, 4, 1); c.fill();
+  } else if (kind === 'sniper') {
+    c.fillStyle = '#334155'; rr(c, 3, -1.8, 33, 3.6, 1); c.fill();
+    c.fillStyle = '#1e293b'; rr(c, 0, -2.5, 8, 5, 1.5); c.fill();
+    c.fillStyle = '#0f172a'; rr(c, 10, -5.5, 9, 3.2, 1.2); c.fill();
+    c.fillStyle = '#38bdf8'; c.fillRect(18.5, -4.8, 1.6, 1.6);
+  } else if (kind === 'minigun') {
+    c.fillStyle = '#3f3f46'; rr(c, 6, -4, 20, 2.6, 1); c.fill(); rr(c, 6, -1.3, 22, 2.6, 1); c.fill(); rr(c, 6, 1.4, 20, 2.6, 1); c.fill();
+    c.fillStyle = '#27272a'; rr(c, 1, -4.5, 6, 9, 2); c.fill();
+    c.fillStyle = '#ef4444'; c.fillRect(24, -1.3, 4, 2.6);
+  } else if (kind === 'rocket') {
+    c.fillStyle = '#4b5563'; rr(c, 2, -4, 27, 8, 2.5); c.fill();
+    c.fillStyle = '#374151'; rr(c, 0, -2.5, 5, 5, 2); c.fill();
+    c.fillStyle = '#dc2626'; c.beginPath(); c.moveTo(29, -4); c.lineTo(34, 0); c.lineTo(29, 4); c.closePath(); c.fill();
+    c.fillStyle = '#fbbf24'; c.fillRect(8, -4, 3, 2);
+  } else if (kind === 'plasma') {
+    c.fillStyle = '#1e293b'; rr(c, 4, -3, 20, 6, 2); c.fill();
+    c.fillStyle = '#0e7490'; rr(c, 10, -4.6, 8, 2, 1); c.fill(); rr(c, 10, 2.6, 8, 2, 1); c.fill();
+    c.shadowColor = '#22d3ee'; c.shadowBlur = 8; c.fillStyle = '#22d3ee';
+    c.beginPath(); c.arc(27, 0, 3.4, 0, Math.PI*2); c.fill(); c.shadowBlur = 0;
+  }
+}
+
+// --- KARAKTER ÇİZİMİ (kalp: gövde + kafa + ekipman + silah) ---
+function drawCharacter(c, x, y, angle, look, o) {
+  o = o || {};
+  const s = o.scale || 1;
+  const walk = o.walk || 0;
+  const recoil = o.recoil || 0;
+  const legPhase = Math.sin(walk);
+  const bob = Math.abs(Math.cos(walk)) * 1.2;
+  const outline = 'rgba(0,0,0,0.5)';
+
+  c.save();
+  c.fillStyle = 'rgba(0,0,0,0.35)';
+  c.beginPath(); c.ellipse(x, y + 15*s, 15*s, 5.5*s, 0, 0, Math.PI*2); c.fill();
+  c.translate(x, y); c.scale(s, s);
+  const fx = Math.cos(angle), fy = Math.sin(angle);
+  const stepX = fx * legPhase * 3.5, stepY = fy * legPhase * 3.5;
+  const px = -fy * 5, py = fx * 5;
+
+  // bacaklar + botlar
+  c.lineWidth = 1.5; c.strokeStyle = outline;
+  c.fillStyle = look.pants;
+  rr(c, px + stepX - 3, 4 + stepY, 6, 12, 3); c.fill(); c.stroke();
+  rr(c, -px - stepX - 3, 4 - stepY, 6, 12, 3); c.fill(); c.stroke();
+  c.fillStyle = '#1c2026';
+  rr(c, px + stepX - 3.2, 13.5 + stepY, 6.4, 4, 1.8); c.fill();
+  rr(c, -px - stepX - 3.2, 13.5 - stepY, 6.4, 4, 1.8); c.fill();
+
+  // gövde
+  c.fillStyle = look.body;
+  c.beginPath(); c.ellipse(0, bob*0.5, 11, 9.5, 0, 0, Math.PI*2); c.fill();
+  c.strokeStyle = outline; c.stroke();
+  c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = 2.4;
+  c.beginPath(); c.moveTo(-6, -6); c.lineTo(7, 5); c.stroke();
+
+  // silah + kollar (yön ile döner)
+  c.save();
+  c.rotate(angle); c.translate(-recoil, 0);
+  const kind = o.weapon || 'pistol';
+  c.strokeStyle = look.body; c.lineWidth = 4.6; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(2, -7); c.lineTo(12, -0.5); c.stroke();
+  c.beginPath(); c.moveTo(2, 7); c.lineTo(9, 1.5); c.stroke();
+  drawWeaponSprite(c, kind);
+  c.fillStyle = look.skin; c.strokeStyle = outline; c.lineWidth = 1;
+  c.beginPath(); c.arc(12, 0.5, 3.1, 0, Math.PI*2); c.fill(); c.stroke();
+  c.beginPath(); c.arc(7, 2, 2.7, 0, Math.PI*2); c.fill(); c.stroke();
+  if (recoil > 3.4) {
+    c.fillStyle = 'rgba(255,244,180,0.95)'; c.beginPath(); c.arc(30, 0, 4.2, 0, Math.PI*2); c.fill();
+    c.fillStyle = 'rgba(251,191,36,0.45)'; c.beginPath(); c.arc(30, 0, 7.5, 0, Math.PI*2); c.fill();
+  }
+  c.restore();
+
+  // kafa
+  const hx = fx * 1.5, hy = -8 + bob * 0.5 + fy * 1.2;
+  c.fillStyle = look.skin; c.strokeStyle = outline; c.lineWidth = 1.5;
+  c.beginPath(); c.arc(hx, hy, 7, 0, Math.PI*2); c.fill(); c.stroke();
+
+  // ekipman (yön ile döner)
+  c.save(); c.translate(hx, hy); c.rotate(angle);
+  c.fillStyle = look.hair;
+  if (look.gear === 'helmet') {
+    c.fillStyle = look.gearColor; c.beginPath(); c.arc(0, -1, 8.2, Math.PI, 0); c.closePath(); c.fill();
+    c.strokeStyle = outline; c.stroke();
+    rr(c, 3.5, -2.2, 5.5, 3, 1.2); c.fill();
+    c.fillStyle = shade(look.gearColor, -25); c.fillRect(-8, -1.2, 16, 1.8);
+    c.fillStyle = look.hair; rr(c, -6.5, 0.5, 4, 2.6, 1); c.fill();
+  } else if (look.gear === 'bandana') {
+    c.fillStyle = look.hair; c.beginPath(); c.arc(0, -2.5, 6.8, Math.PI*1.02, Math.PI*1.98); c.closePath(); c.fill();
+    c.fillStyle = look.gearColor; rr(c, -8, -3.4, 16, 4.2, 1.6); c.fill();
+    c.strokeStyle = outline; c.stroke();
+    c.fillStyle = shade(look.gearColor, -30); c.beginPath(); c.moveTo(-8, -2); c.lineTo(-12.5, -0.5); c.lineTo(-9, 1.5); c.closePath(); c.fill();
+  } else if (look.gear === 'medic') {
+    c.fillStyle = look.hair; c.beginPath(); c.arc(0, -3, 7, Math.PI*1.05, Math.PI*1.95); c.closePath(); c.fill();
+    if (look.bun) { c.beginPath(); c.arc(-7.5, 1.5, 3.4, 0, Math.PI*2); c.fill(); }
+    c.fillStyle = look.gearColor; c.beginPath(); c.arc(0, -1.8, 7.6, Math.PI, 0); c.closePath(); c.fill();
+    c.strokeStyle = outline; c.stroke();
+    c.fillStyle = '#dc2626'; c.fillRect(-1.3, -7.6, 2.6, 5); c.fillRect(-3.3, -6.2, 6.6, 2.2);
+  } else if (look.gear === 'beret') {
+    c.fillStyle = look.hair; c.beginPath(); c.arc(0, -2, 6.6, Math.PI*1.05, Math.PI*1.95); c.closePath(); c.fill();
+    c.fillStyle = look.gearColor; c.beginPath(); c.ellipse(0.5, -5.6, 7.6, 3.1, -0.22, 0, Math.PI*2); c.fill();
+    c.strokeStyle = outline; c.stroke();
+    c.beginPath(); c.arc(0.5, -8.8, 1.5, 0, Math.PI*2); c.fill();
+  } else if (look.gear === 'heavy') {
+    c.fillStyle = look.gearColor; c.beginPath(); c.arc(0, -1.4, 8.6, Math.PI, 0); c.closePath(); c.fill();
+    c.strokeStyle = outline; c.stroke();
+    c.fillStyle = shade(look.gearColor, -35); c.fillRect(-8.2, -1.6, 16.4, 2.2);
+    c.fillStyle = shade(look.gearColor, 30);
+    [[-5,-5],[0,-6.6],[5,-5]].forEach(p => { c.beginPath(); c.arc(p[0], p[1], 1, 0, Math.PI*2); c.fill(); });
+  } else if (look.gear === 'hood') {
+    c.lineCap = 'round';
+    c.strokeStyle = look.gearColor; c.lineWidth = 5.5;
+    c.beginPath(); c.arc(0, -0.5, 7.6, Math.PI*0.6, Math.PI*1.4); c.stroke();
+    c.fillStyle = look.gearColor;
+    c.beginPath(); c.moveTo(-3.5, -8); c.quadraticCurveTo(0, -13.5, 3.5, -8); c.closePath(); c.fill();
+    c.strokeStyle = outline; c.lineWidth = 1; c.stroke();
+    c.fillStyle = 'rgba(0,0,0,0.28)'; c.beginPath(); c.arc(0.8, 0.8, 5.6, 0, Math.PI*2); c.fill();
+  }
+  c.restore();
+
+  // yüz (bakış yönü)
+  const ex = hx + fx*2.6, ey = hy + fy*2.6;
+  const e1x = ex - fy*2.4, e1y = ey + fx*2.4, e2x = ex + fy*2.4, e2y = ey - fx*2.4;
+  if (look.gear === 'hood') {
+    c.fillStyle = '#facc15';
+    c.beginPath(); c.arc(e1x, e1y, 1.15, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.arc(e2x, e2y, 1.15, 0, Math.PI*2); c.fill();
+  } else {
+    c.fillStyle = '#1c2026';
+    c.beginPath(); c.arc(e1x, e1y, 1.05, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.arc(e2x, e2y, 1.05, 0, Math.PI*2); c.fill();
+    if (look.glasses) {
+      c.strokeStyle = '#111827'; c.lineWidth = 1.6;
+      c.beginPath(); c.arc(e1x, e1y, 1.9, 0, Math.PI*2); c.stroke();
+      c.beginPath(); c.arc(e2x, e2y, 1.9, 0, Math.PI*2); c.stroke();
+      c.beginPath(); c.moveTo(e1x + fy*1.9, e1y - fx*1.9); c.lineTo(e2x + fy*1.9, e2y - fx*1.9); c.stroke();
+    }
+  }
+  c.restore();
+}
+
+// --- MARKET İKONLARI ---
+function drawWeaponIcon(cv, kind) {
+  const c = cv.getContext('2d');
+  c.clearRect(0, 0, cv.width, cv.height);
+  const lens = { pistol:20, smg:27, shotgun:32, rifle:33, sniper:36, minigun:28, rocket:34, plasma:31 };
+  const len = lens[kind] || 30;
+  const sc = Math.min(1.7, 42 / len);
+  c.save(); c.translate(24, 34); c.rotate(-0.7); c.scale(sc, sc);
+  drawWeaponSprite(c, kind);
+  c.restore();
+}
+function drawCharIcon(cv, b) {
+  const c = cv.getContext('2d');
+  c.clearRect(0, 0, cv.width, cv.height);
+  drawCharacter(c, 28, 32, -0.9, b.look, { scale: 1.3, walk: 0, recoil: 0, weapon: 'pistol' });
+}
+
+// --- ZOMBİ ÇİZİMİ ---
+function drawZombie(e) {
+  const s = e.type === 'tank' ? 1.5 : (e.type === 'elite' ? 1.18 : (e.type === 'runner' ? 0.9 : 1));
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(e.x, e.y + 13*s, 13*s, 4.5*s, 0, 0, Math.PI*2); ctx.fill();
+  ctx.translate(e.x, e.y); ctx.scale(s, s); ctx.rotate(e.angle);
+  const bob = Math.sin(e.bob);
+  const body = e.hitFlash ? '#ffffff' : e.color;
+  const dark = e.hitFlash ? '#dddddd' : shade(e.color, -35);
+  ctx.fillStyle = dark;
+  rr(ctx, -2 + bob*2.4, 5, 5, 9, 2); ctx.fill();
+  rr(ctx, -6 - bob*2.4, 5, 5, 9, 2); ctx.fill();
+  ctx.strokeStyle = body; ctx.lineWidth = 4.6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(2, -6); ctx.lineTo(15 + bob*1.8, -3.5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(2, 6); ctx.lineTo(15 - bob*1.8, 3.5); ctx.stroke();
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.arc(15.5 + bob*1.8, -3.5, 2.6, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(15.5 - bob*1.8, 3.5, 2.6, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.ellipse(0, 0, 9.5, 8, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  if (!e.hitFlash) { ctx.fillStyle = dark; ctx.beginPath(); ctx.arc(-3, -2, 2.4, 0, Math.PI*2); ctx.fill(); }
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.arc(4.5, 0, 5.8, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3a1010';
+  ctx.beginPath(); ctx.ellipse(8.2, 0.4, 2, 1.3, 0, 0, Math.PI*2); ctx.fill();
+  ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 6;
+  ctx.fillStyle = '#ef4444';
+  const eyw = Math.sin(e.bob*2)*0.4;
+  ctx.beginPath(); ctx.arc(6.4, -2.1+eyw, 1.25, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(6.4, 2.1+eyw, 1.25, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur = 0;
+  if (e.type === 'tank' && !e.hitFlash) {
+    ctx.fillStyle = shade(e.color, -25);
+    rr(ctx, -4, -7.5, 7, 15, 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.2; ctx.stroke();
+  }
+  if (e.type === 'elite' && !e.hitFlash) {
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath(); ctx.moveTo(1,-5.5); ctx.lineTo(3,-10.5); ctx.lineTo(5,-5.8); ctx.lineTo(7,-10); ctx.lineTo(9,-5.2); ctx.closePath(); ctx.fill();
+    ctx.shadowColor = '#fde047'; ctx.shadowBlur = 10; ctx.shadowBlur = 0;
+  }
   ctx.restore();
-  if(p.shield > 0) { ctx.strokeStyle = `rgba(59,130,246,0.7)`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 25, 0, Math.PI*2); ctx.stroke(); }
+  if(e.hp < e.maxHp) {
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(e.x-15, e.y - e.r - 14, 30, 4);
+    ctx.fillStyle = e.type === 'elite' ? '#facc15' : '#ef4444';
+    ctx.fillRect(e.x-15, e.y - e.r - 14, 30*Math.max(0, e.hp/e.maxHp), 4);
+  }
 }
 
-function drawEnemy(e) {
-  ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(e.x, e.y + e.r, e.r*0.8, e.r*0.3, 0, 0, Math.PI*2); ctx.fill();
-  const bobY = Math.sin(e.bob) * 2; ctx.fillStyle = '#1a1a1a'; ctx.fillRect(e.x - 4, e.y + e.r/2, 3, 8 + bobY); ctx.fillRect(e.x + 1, e.y + e.r/2, 3, 8 - bobY);
-  ctx.strokeStyle = e.hitFlash ? '#fff' : e.color; ctx.lineWidth = 4; ctx.beginPath();
-  ctx.moveTo(e.x - 4, e.y + bobY); ctx.lineTo(e.x - e.r - 3, e.y - 3 + bobY); ctx.moveTo(e.x + 4, e.y + bobY); ctx.lineTo(e.x + e.r + 3, e.y - 3 + bobY); ctx.stroke();
-  ctx.fillStyle = e.hitFlash ? '#fff' : e.color; ctx.beginPath(); ctx.ellipse(e.x, e.y + bobY, e.r*0.8, e.r, 0, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.fillStyle = e.hitFlash ? '#fff' : e.color; ctx.beginPath(); ctx.arc(e.x, e.y - e.r/2 - 4 + bobY, e.r*0.6, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8; ctx.fillStyle = '#ef4444'; ctx.beginPath();
-  ctx.arc(e.x - 3, e.y - e.r/2 - 4 + bobY, 1.5, 0, Math.PI*2); ctx.arc(e.x + 3, e.y - e.r/2 - 4 + bobY, 1.5, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
-  if(e.hp < e.maxHp){ ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(e.x-15, e.y-e.r-8, 30, 4); ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x-15, e.y-e.r-8, 30*(e.hp/e.maxHp), 4); }
-}
-
+// --- DEKOR ÇİZİMİ ---
 function drawDecoration(d) {
-  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(d.x - 30, d.y + 90, 60, 10);
-  if(d.type === 'building') { ctx.fillStyle = '#374151'; ctx.fillRect(d.x - 30, d.y - 10, 60, 100); ctx.fillStyle = '#1f2937'; ctx.fillRect(d.x - 30, d.y - 10, 60, 5); for(let i=0; i<3; i++) for(let j=0; j<4; j++) { ctx.fillStyle = (Math.random() > 0.3) ? '#facc15' : '#111'; ctx.fillRect(d.x - 25 + i*20, d.y + j*25, 10, 15); } } 
-  else if(d.type === 'tree') { ctx.fillStyle = '#5c3d1e'; ctx.fillRect(d.x - 5, d.y - 20, 10, 25); ctx.fillStyle = '#1e4d1b'; ctx.beginPath(); ctx.arc(d.x, d.y - 40, 22, 0, Math.PI*2); ctx.fill(); } 
-  else if(d.type === 'rock') { ctx.fillStyle = '#6b7280'; ctx.beginPath(); ctx.arc(d.x, d.y, 15, 0, Math.PI*2); ctx.fill(); } 
-  else if(d.type === 'cactus') { ctx.fillStyle = '#2d5a27'; ctx.fillRect(d.x - 5, d.y - 40, 10, 45); ctx.fillRect(d.x - 15, d.y - 25, 10, 15); ctx.fillRect(d.x + 5, d.y - 30, 10, 15); } 
-  else if(d.type === 'pyramid') { ctx.fillStyle = '#c4933a'; ctx.beginPath(); ctx.moveTo(d.x - 60, d.y); ctx.lineTo(d.x, d.y - 80); ctx.lineTo(d.x + 60, d.y); ctx.closePath(); ctx.fill(); } 
-  else if(d.type === 'pine') { ctx.fillStyle = '#4a3a20'; ctx.fillRect(d.x - 4, d.y - 15, 8, 15); ctx.fillStyle = '#1e4d1b'; ctx.beginPath(); ctx.moveTo(d.x - 20, d.y - 5); ctx.lineTo(d.x, d.y - 40); ctx.lineTo(d.x + 20, d.y - 5); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(d.x, d.y - 35, 5, 0, Math.PI*2); ctx.fill(); } 
-  else if(d.type === 'igloo') { ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(d.x, d.y, 25, Math.PI, 0); ctx.fill(); ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(d.x, d.y, 8, Math.PI, 0); ctx.fill(); } 
-  else if(d.type === 'volcano') { ctx.fillStyle = '#2d1e1e'; ctx.beginPath(); ctx.moveTo(d.x - 55, d.y); ctx.lineTo(d.x - 20, d.y - 70); ctx.lineTo(d.x + 20, d.y - 70); ctx.lineTo(d.x + 55, d.y); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.ellipse(d.x, d.y - 70, 20, 6, 0, 0, Math.PI*2); ctx.fill(); } 
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  if(d.type === 'building') ctx.fillRect(d.x - 32, d.y + 88, 64, 10);
+  else if(d.type === 'volcano') ctx.fillRect(d.x - 52, d.y - 4, 104, 8);
+  else if(d.type === 'pyramid') ctx.fillRect(d.x - 58, d.y - 4, 116, 8);
+  else if(d.type === 'tree') { ctx.beginPath(); ctx.ellipse(d.x + 2, d.y + 6, 18, 5, 0, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'rock') { ctx.beginPath(); ctx.ellipse(d.x, d.y + 12, 16, 5, 0, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'cactus') { ctx.beginPath(); ctx.ellipse(d.x, d.y + 7, 13, 4, 0, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'pine') { ctx.beginPath(); ctx.ellipse(d.x, d.y + 3, 16, 4, 0, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'igloo') { ctx.beginPath(); ctx.ellipse(d.x, d.y + 3, 24, 5, 0, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'jagged_rock') { ctx.beginPath(); ctx.ellipse(d.x, d.y + 2, 20, 4, 0, 0, Math.PI*2); ctx.fill(); }
+  if(d.type === 'building') {
+    if (!d.lit) d.lit = Array.from({length: 12}, () => Math.random() > 0.35);
+    ctx.fillStyle = '#374151'; ctx.fillRect(d.x - 30, d.y - 10, 60, 100);
+    ctx.fillStyle = '#1f2937'; ctx.fillRect(d.x - 30, d.y - 10, 60, 5);
+    for(let i=0; i<3; i++) for(let j=0; j<4; j++) { ctx.fillStyle = d.lit[i*4+j] ? '#facc15' : '#111'; ctx.fillRect(d.x - 25 + i*20, d.y + j*25, 10, 15); }
+  }
+  else if(d.type === 'tree') { ctx.fillStyle = '#5c3d1e'; ctx.fillRect(d.x - 5, d.y - 20, 10, 25); ctx.fillStyle = '#1e4d1b'; ctx.beginPath(); ctx.arc(d.x, d.y - 40, 22, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#276121'; ctx.beginPath(); ctx.arc(d.x - 8, d.y - 46, 12, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'rock') { ctx.fillStyle = '#6b7280'; ctx.beginPath(); ctx.arc(d.x, d.y, 15, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#9ca3af'; ctx.beginPath(); ctx.arc(d.x - 4, d.y - 5, 7, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'cactus') { ctx.fillStyle = '#2d5a27'; ctx.fillRect(d.x - 5, d.y - 40, 10, 45); ctx.fillRect(d.x - 15, d.y - 25, 10, 15); ctx.fillRect(d.x + 5, d.y - 30, 10, 15); }
+  else if(d.type === 'pyramid') { ctx.fillStyle = '#c4933a'; ctx.beginPath(); ctx.moveTo(d.x - 60, d.y); ctx.lineTo(d.x, d.y - 80); ctx.lineTo(d.x + 60, d.y); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#a87c2a'; ctx.beginPath(); ctx.moveTo(d.x, d.y - 80); ctx.lineTo(d.x + 60, d.y); ctx.lineTo(d.x, d.y); ctx.closePath(); ctx.fill(); }
+  else if(d.type === 'pine') { ctx.fillStyle = '#4a3a20'; ctx.fillRect(d.x - 4, d.y - 15, 8, 15); ctx.fillStyle = '#1e4d1b'; ctx.beginPath(); ctx.moveTo(d.x - 20, d.y - 5); ctx.lineTo(d.x, d.y - 40); ctx.lineTo(d.x + 20, d.y - 5); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(d.x, d.y - 35, 5, 0, Math.PI*2); ctx.fill(); }
+  else if(d.type === 'igloo') { ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.arc(d.x, d.y, 25, Math.PI, 0); ctx.fill(); ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(d.x, d.y, 8, Math.PI, 0); ctx.fill(); }
+  else if(d.type === 'volcano') { ctx.fillStyle = '#2d1e1e'; ctx.beginPath(); ctx.moveTo(d.x - 55, d.y); ctx.lineTo(d.x - 20, d.y - 70); ctx.lineTo(d.x + 20, d.y - 70); ctx.lineTo(d.x + 55, d.y); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.ellipse(d.x, d.y - 70, 20, 6, 0, 0, Math.PI*2); ctx.fill(); }
   else if(d.type === 'jagged_rock') { ctx.fillStyle = '#1f1f1f'; ctx.beginPath(); ctx.moveTo(d.x - 20, d.y); ctx.lineTo(d.x - 5, d.y - 30); ctx.lineTo(d.x + 10, d.y - 25); ctx.lineTo(d.x + 20, d.y); ctx.closePath(); ctx.fill(); }
 }
 
-function drawWorld() { 
-  const m = maps[state.map]; ctx.fillStyle = m.bg2; ctx.fillRect(0, 0, W, H); 
-  ctx.save(); ctx.translate(-state.camera.x + (Math.random()-0.5)*state.shake*2, -state.camera.y + (Math.random()-0.5)*state.shake*2); 
-  ctx.fillStyle = m.bg1; ctx.fillRect(0, 0, WORLD_W, WORLD_H); 
-  ctx.strokeStyle = m.ground; ctx.lineWidth = 1; ctx.globalAlpha = 0.3; 
-  for(let x=0; x<WORLD_W; x+=100) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_H); ctx.stroke(); } 
-  for(let y=0; y<WORLD_H; y+=100) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD_W, y); ctx.stroke(); } 
-  ctx.globalAlpha = 1; 
-  const dz = state.dropZone; ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(dz.x, dz.y, dz.w, dz.h); 
-  ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.setLineDash([10,6]); ctx.strokeRect(dz.x, dz.y, dz.w, dz.h); ctx.setLineDash([]); 
-  ctx.fillStyle = '#facc15'; ctx.font = 'bold 16px Fredoka'; ctx.textAlign = 'center'; ctx.fillText('BASE', dz.x+dz.w/2, dz.y+30); 
-  let entities = []; 
-  state.decorations.forEach(d => entities.push({type:'deco', y: d.y + d.h, obj: d})); 
-  state.enemies.forEach(e => entities.push({type:'enemy', y: e.y, obj: e})); 
-  if(state.isMP) { for(let id in state.remotePlayers) { let rp = state.remotePlayers[id]; if(rp.hp > 0) entities.push({type:'remote', y: rp.y, obj: rp}); } } 
-  if(state.player && state.player.hp > 0) entities.push({type:'player', y: state.player.y + 15, obj: state.player}); 
-  state.coins.forEach(c => { if(c.collected) return; const by = c.y + Math.sin(c.bob)*4; ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(c.x, c.y+12, c.r*0.8, c.r*0.3, 0, 0, Math.PI*2); ctx.fill(); if(c.glow) { ctx.shadowColor = c.color; ctx.shadowBlur = 15; } ctx.fillStyle = c.color; ctx.beginPath(); ctx.arc(c.x, by, c.r, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }); 
-  state.pickups.forEach(pk => { if(pk.collected) return; const by = pk.y + Math.sin(pk.bob)*3; ctx.fillStyle = pk.color; ctx.beginPath(); ctx.arc(pk.x, by, pk.r, 0, Math.PI*2); ctx.fill(); }); 
-  entities.sort((a, b) => a.y - b.y); 
-  entities.forEach(ent => { 
-    if(ent.type === 'deco') drawDecoration(ent.obj); 
-    else if(ent.type === 'enemy') drawEnemy(ent.obj); 
-    else if(ent.type === 'player') drawPlayer(); 
-    else if(ent.type === 'remote') { let rp = ent.obj; ctx.save(); ctx.translate(rp.x, rp.y); ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = '#e2b04a'; ctx.beginPath(); ctx.arc(0, -4, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Fredoka'; ctx.textAlign = 'center'; let pName = state.isHost ? state.guestName : state.hostName; if(!pName) pName = 'Dost'; ctx.fillText(pName, 0, -25); ctx.restore(); } 
-  }); 
-  state.bullets.forEach(b => { ctx.fillStyle = b.color; ctx.shadowColor = b.color; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }); 
-  state.particles.forEach(pt => { ctx.globalAlpha = pt.life / 30; ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, Math.PI*2); ctx.fill(); }); 
-  ctx.globalAlpha = 1; ctx.restore(); 
-  
-  const mw = 150, mh = 100, mx = W - mw - 10, my = 10; 
-  ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(mx, my, mw, mh); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mx, my, mw, mh); 
-  const scaleX = mw / WORLD_W, scaleY = mh / WORLD_H; 
-  state.decorations.forEach(d => { ctx.fillStyle = 'gray'; ctx.fillRect(mx + d.x * scaleX - 1, my + d.y * scaleY - 1, 2, 2); }); 
-  state.enemies.forEach(e => { ctx.fillStyle = 'red'; ctx.fillRect(mx + e.x * scaleX - 1, my + e.y * scaleY - 1, 2, 2); }); 
-  state.coins.forEach(c => { if(c.collected) return; ctx.fillStyle = c.color; ctx.fillRect(mx + c.x * scaleX, my + c.y * scaleY, 2, 2); }); 
-  if(state.player) { ctx.fillStyle = '#facc15'; ctx.fillRect(mx + state.player.x * scaleX - 2, my + state.player.y * scaleY - 2, 4, 4); } 
-  ctx.fillStyle = '#fde047'; ctx.fillRect(mx + state.dropZone.x * scaleX, my + state.dropZone.y * scaleY, state.dropZone.w * scaleX, state.dropZone.h * scaleY); 
-  if(state.lowHpEffect && state.phase === 'playing') { ctx.fillStyle = `rgba(255, 0, 0, ${0.1 + Math.sin(state.time * 0.1) * 0.05})`; ctx.fillRect(0, 0, W, H); } 
-  
+// --- DÜNYA ÇİZİMİ ---
+function drawWorld() {
+  const m = maps[state.map]; ctx.fillStyle = m.bg2; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.translate(-state.camera.x + (Math.random()-0.5)*state.shake*2, -state.camera.y + (Math.random()-0.5)*state.shake*2);
+  ctx.fillStyle = m.bg1; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+  ctx.strokeStyle = m.ground; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+  for(let x=0; x<WORLD_W; x+=100) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_H); ctx.stroke(); }
+  for(let y=0; y<WORLD_H; y+=100) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD_W, y); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+  const dz = state.dropZone;
+  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(dz.x, dz.y, dz.w, dz.h);
+  ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.setLineDash([10,6]); ctx.strokeRect(dz.x, dz.y, dz.w, dz.h); ctx.setLineDash([]);
+  ctx.fillStyle = '#facc15'; ctx.font = "bold 16px Fredoka, sans-serif"; ctx.textAlign = 'center'; ctx.fillText('ÜS', dz.x+dz.w/2, dz.y+22);
+  ctx.fillStyle = '#78350f'; ctx.fillRect(dz.x+10, dz.y+40, 34, 24); ctx.fillRect(dz.x+52, dz.y+48, 34, 24);
+  ctx.strokeStyle = '#5c2d0e'; ctx.lineWidth = 2; ctx.strokeRect(dz.x+10, dz.y+40, 34, 24); ctx.strokeRect(dz.x+52, dz.y+48, 34, 24);
+
+  state.coins.forEach(c => { if(c.collected) return; const by = c.y + Math.sin(c.bob)*4; ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(c.x, c.y+12, c.r*0.8, c.r*0.3, 0, 0, Math.PI*2); ctx.fill(); if(c.glow) { ctx.shadowColor = c.color; ctx.shadowBlur = 15; } ctx.fillStyle = c.color; ctx.beginPath(); ctx.arc(c.x, by, c.r, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = c.darkColor; ctx.beginPath(); ctx.arc(c.x, by, c.r*0.45, 0, Math.PI*2); ctx.fill(); });
+  state.btcs.forEach(b => { if(b.collected) return; const by = b.y + Math.sin(b.bob)*4; ctx.shadowColor = '#f7931a'; ctx.shadowBlur = 12; ctx.fillStyle = '#f7931a'; rr(ctx, b.x-9, by-9, 18, 18, 4); ctx.fill(); ctx.shadowBlur = 0; ctx.strokeStyle = '#7c2d12'; ctx.lineWidth = 2; rr(ctx, b.x-9, by-9, 18, 18, 4); ctx.stroke(); ctx.fillStyle = '#fff'; ctx.font = "bold 13px Fredoka, sans-serif"; ctx.fillText('₿', b.x, by+4.5); });
+  state.pickups.forEach(pk => { if(pk.collected) return; const by = pk.y + Math.sin(pk.bob)*3; if(pk.medkit) { ctx.fillStyle = '#f8fafc'; rr(ctx, pk.x-9, by-9, 18, 18, 3); ctx.fill(); ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5; rr(ctx, pk.x-9, by-9, 18, 18, 3); ctx.stroke(); ctx.fillStyle = '#dc2626'; ctx.fillRect(pk.x-1.8, by-6, 3.6, 12); ctx.fillRect(pk.x-6, by-1.8, 12, 3.6); } else { ctx.fillStyle = pk.color; ctx.beginPath(); ctx.arc(pk.x, by, pk.r, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = pk.darkColor; ctx.beginPath(); ctx.arc(pk.x, by, pk.r*0.45, 0, Math.PI*2); ctx.fill(); } });
+
+  let entities = [];
+  state.decorations.forEach(d => entities.push({type:'deco', y: d.y + d.h, obj: d}));
+  state.enemies.forEach(e => entities.push({type:'enemy', y: e.y, obj: e}));
+  if(state.isMP) { for(let id in state.remotePlayers) { let rp = state.remotePlayers[id]; if(rp.hp > 0) entities.push({type:'remote', y: rp.y, obj: rp}); } }
+  if(state.player && state.player.hp > 0) entities.push({type:'player', y: state.player.y + 15, obj: state.player});
+  entities.sort((a, b) => a.y - b.y);
+  entities.forEach(ent => {
+    if(ent.type === 'deco') drawDecoration(ent.obj);
+    else if(ent.type === 'enemy') drawZombie(ent.obj);
+    else if(ent.type === 'player') {
+      const p = state.player;
+      drawCharacter(ctx, p.x, p.y, p.angle, p.look, { scale: p.scale, walk: p.walkAnim, recoil: p.recoil, weapon: weapons[p.weapon].kind });
+    }
+    else if(ent.type === 'remote') {
+      let rp = ent.obj; const rch = charById(rp.brawler);
+      drawCharacter(ctx, rp.x, rp.y, rp.angle || 0, rch.look, { scale: rch.scale || 1, walk: state.time * 0.05, recoil: 0, weapon: 'pistol' });
+      ctx.fillStyle = '#fff'; ctx.font = "bold 12px Fredoka, sans-serif"; ctx.textAlign = 'center';
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.lineWidth = 3;
+      const nm = rp.name || 'Dost';
+      ctx.strokeText(nm, rp.x, rp.y - 26); ctx.fillText(nm, rp.x, rp.y - 26);
+    }
+  });
+  state.bullets.forEach(b => {
+    if(b.kind === 'rocket') {
+      ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.arc(b.x - b.vx*1.2, b.y - b.vy*1.2, 3.4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.arc(b.x, b.y, 4.6, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle = b.color; ctx.shadowColor = b.color; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    }
+  });
+  state.particles.forEach(pt => {
+    ctx.globalAlpha = Math.max(0, pt.life / (pt.maxLife || 30)) * (pt.ghost ? 0.4 : 1);
+    ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.ghost ? 8 : 3, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  state.texts.forEach(t => {
+    ctx.globalAlpha = Math.max(0, t.life / 40);
+    ctx.font = "bold 13px Fredoka, sans-serif"; ctx.textAlign = 'center';
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 3;
+    ctx.strokeText(t.str, t.x, t.y); ctx.fillStyle = t.color; ctx.fillText(t.str, t.x, t.y);
+  });
+  ctx.globalAlpha = 1; ctx.restore();
+
+  // mini harita (HUD'ın altına konumlu)
+  const mw = 150, mh = 100, mx = W - mw - 10, my = 112;
+  ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(mx, my, mw, mh); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mx, my, mw, mh);
+  const scaleX = mw / WORLD_W, scaleY = mh / WORLD_H;
+  state.decorations.forEach(d => { ctx.fillStyle = 'gray'; ctx.fillRect(mx + d.x * scaleX - 1, my + d.y * scaleY - 1, 2, 2); });
+  state.enemies.forEach(e => { ctx.fillStyle = e.type === 'elite' ? '#facc15' : 'red'; ctx.fillRect(mx + e.x * scaleX - 1, my + e.y * scaleY - 1, 2, 2); });
+  state.coins.forEach(c => { if(c.collected) return; ctx.fillStyle = c.color; ctx.fillRect(mx + c.x * scaleX, my + c.y * scaleY, 2, 2); });
+  state.btcs.forEach(b => { if(b.collected) return; ctx.fillStyle = '#f7931a'; ctx.fillRect(mx + b.x * scaleX - 1, my + b.y * scaleY - 1, 3, 3); });
+  if(state.player) { ctx.fillStyle = '#facc15'; ctx.fillRect(mx + state.player.x * scaleX - 2, my + state.player.y * scaleY - 2, 4, 4); }
+  ctx.fillStyle = 'rgba(253,224,71,0.5)'; ctx.fillRect(mx + dz.x * scaleX, my + dz.y * scaleY, dz.w * scaleX, dz.h * scaleY);
+
+  if(state.flash > 0) { ctx.fillStyle = `rgba(220, 38, 38, ${Math.min(0.25, state.flash * 0.25)})`; ctx.fillRect(0, 0, W, H); }
+  if(state.lowHpEffect && state.phase === 'playing') { ctx.fillStyle = `rgba(255, 0, 0, ${0.1 + Math.sin(state.time * 0.1) * 0.05})`; ctx.fillRect(0, 0, W, H); }
+
+  // dalga afişi
+  if(state.banner) {
+    const t = state.banner.t;
+    const a = Math.max(0, Math.min(1, t / 30, (150 - t) / 20));
+    ctx.globalAlpha = a;
+    ctx.textAlign = 'center';
+    ctx.font = "58px 'Lilita One', cursive";
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 8;
+    ctx.strokeText(state.banner.text, W/2, H/2 - 70);
+    ctx.fillStyle = '#facc15'; ctx.fillText(state.banner.text, W/2, H/2 - 70);
+    ctx.font = "600 18px Fredoka, sans-serif";
+    ctx.strokeText(state.banner.sub, W/2, H/2 - 40);
+    ctx.fillStyle = '#e2e8f0'; ctx.fillText(state.banner.sub, W/2, H/2 - 40);
+    ctx.globalAlpha = 1;
+  }
+
   if(state.isTouch) drawJoysticks();
-  
+
   if(state.isMP && (state.phase === 'playing' || state.mapOpen)) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(W/2 - 150, 10, 300, 60);
-    ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2; ctx.strokeRect(W/2 - 150, 10, 300, 60);
-    ctx.fillStyle = '#facc15'; ctx.font = 'bold 14px Fredoka'; ctx.textAlign = 'center';
-    ctx.fillText('ODA KODU: ' + state.roomCode, W/2, 30);
-    ctx.fillStyle = '#fff'; ctx.font = '12px Fredoka';
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(W/2 - 150, 80, 300, 46);
+    ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2; ctx.strokeRect(W/2 - 150, 80, 300, 46);
+    ctx.fillStyle = '#facc15'; ctx.font = "bold 14px Fredoka, sans-serif"; ctx.textAlign = 'center';
+    ctx.fillText('ODA KODU: ' + state.roomCode, W/2, 99);
+    ctx.fillStyle = '#fff'; ctx.font = "12px Fredoka, sans-serif";
     let myName = state.loggedInUser || 'Misafir';
     let friendName = state.isHost ? (state.guestName || 'Bekleniyor...') : (state.hostName || 'Bekleniyor...');
-    ctx.textAlign = 'left'; ctx.fillText('🟡 ' + myName, W/2 - 140, 55);
-    ctx.textAlign = 'right'; ctx.fillText('🔵 ' + friendName, W/2 + 140, 55);
+    ctx.textAlign = 'left'; ctx.fillText('Sen: ' + myName, W/2 - 140, 117);
+    ctx.textAlign = 'right'; ctx.fillText('Dost: ' + friendName, W/2 + 140, 117);
   }
 
   if(state.mapOpen) drawFullMap();
@@ -737,19 +1336,27 @@ function drawFullMap() {
   const dz = state.dropZone;
   ctx.fillStyle = 'rgba(251, 191, 36, 0.3)'; ctx.fillRect(mx(dz.x), my(dz.y), dz.w * scaleX, dz.h * scaleY);
   ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1; ctx.strokeRect(mx(dz.x), my(dz.y), dz.w * scaleX, dz.h * scaleY);
-  ctx.fillStyle = '#facc15'; ctx.font = 'bold 12px Fredoka'; ctx.textAlign = 'center'; ctx.fillText('BASE', mx(dz.x + dz.w/2), my(dz.y + 15));
+  ctx.fillStyle = '#facc15'; ctx.font = "bold 12px Fredoka, sans-serif"; ctx.textAlign = 'center'; ctx.fillText('ÜS', mx(dz.x + dz.w/2), my(dz.y + 15));
   ctx.fillStyle = '#4b5563'; state.decorations.forEach(d => { ctx.fillRect(mx(d.x) - 1, my(d.y) - 1, 3, 3); });
   state.coins.forEach(c => { if (!c.collected) { ctx.fillStyle = c.color; ctx.fillRect(mx(c.x), my(c.y), 2, 2); } });
   state.pickups.forEach(pk => { if (!pk.collected) { ctx.fillStyle = pk.color; ctx.fillRect(mx(pk.x), my(pk.y), 2, 2); } });
+  state.btcs.forEach(b => { if (!b.collected) { ctx.fillStyle = '#f7931a'; ctx.fillRect(mx(b.x) - 1, my(b.y) - 1, 4, 4); } });
   ctx.fillStyle = '#ef4444'; state.enemies.forEach(e => { ctx.beginPath(); ctx.arc(mx(e.x), my(e.y), 3, 0, Math.PI * 2); ctx.fill(); });
   if (state.isMP) { for (let id in state.remotePlayers) { let rp = state.remotePlayers[id]; ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(mx(rp.x), my(rp.y), 5, 0, Math.PI * 2); ctx.fill(); } }
-  if (state.player) { ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(mx(state.player.x), my(state.player.y), 5, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mx(state.player.x), my(state.player.y)); ctx.lineTo(mx(state.player.x) + Math.cos(state.player.angle) * 15, my(state.player.y) + Math.sin(state.player.angle) * 15); ctx.stroke(); }
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 20px Lilita One'; ctx.textAlign = 'center'; ctx.fillText('HARİTA (Kapatmak için M tuşunu bırakın)', W / 2, offY - 15);
-  ctx.textAlign = 'left'; ctx.font = '12px Fredoka'; let legY = offY + mapH + 20;
+  if (state.player) {
+    ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(mx(state.player.x), my(state.player.y), 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(mx(state.player.x), my(state.player.y));
+    ctx.lineTo(mx(state.player.x) + Math.cos(state.player.angle) * 15, my(state.player.y) + Math.sin(state.player.angle) * 15); ctx.stroke();
+  }
+  ctx.fillStyle = '#fff'; ctx.font = "20px 'Lilita One', cursive"; ctx.textAlign = 'center';
+  ctx.fillText('HARİTA (kapatmak için M tuşunu bırakın)', W / 2, offY - 15);
+  ctx.textAlign = 'left'; ctx.font = "12px Fredoka, sans-serif"; let legY = offY + mapH + 20;
   ctx.fillStyle = '#facc15'; ctx.fillText('● Sen', offX, legY);
   ctx.fillStyle = '#ef4444'; ctx.fillText('● Zombi', offX + 80, legY);
   ctx.fillStyle = '#fbbf24'; ctx.fillText('● Altın/Maden', offX + 160, legY);
-  if (state.isMP) { ctx.fillStyle = '#3b82f6'; ctx.fillText('● Dost', offX + 280, legY); }
+  ctx.fillStyle = '#f7931a'; ctx.fillText('● BTC', offX + 280, legY);
+  if (state.isMP) { ctx.fillStyle = '#3b82f6'; ctx.fillText('● Dost', offX + 350, legY); }
 }
 
 function drawJoysticks() {
@@ -757,38 +1364,56 @@ function drawJoysticks() {
   if(state.touchControls.right.active) { ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.touchControls.right.startX, state.touchControls.right.startY, 50, 0, Math.PI*2); ctx.stroke(); ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; ctx.beginPath(); ctx.arc(state.touchControls.right.startX + state.touchControls.right.dx*30, state.touchControls.right.startY + state.touchControls.right.dy*30, 20, 0, Math.PI*2); ctx.fill(); }
 }
 
-function mobileReload() { if(state.phase === 'playing' && !state.player.reloading && !(state.isAdmin && state.adminTier === 10)) { state.player.reloading = true; state.player.reloadStart = Date.now(); playSound('reload'); } }
-function mobileDash() { if(state.phase === 'playing' && state.player.dashCd <= 0) { state.player.dashing = 10; state.player.dashCd = 60; } }
+// --- MENÜ KARAKTER ÖNİZLEMESİ ---
+const pcv = document.getElementById('charPreview');
+const pctx = pcv.getContext('2d');
+let pvT = 0;
+function drawPreview() {
+  pvT++;
+  pctx.clearRect(0, 0, 180, 180);
+  const b = charById(state.currentBrawler);
+  const ang = Math.sin(pvT * 0.012) * 0.8 - 0.4;
+  drawCharacter(pctx, 90, 108, ang, b.look, { scale: 2.9, walk: pvT * 0.045, recoil: 0, weapon: weapons[state.currentWeapon].kind });
+}
 
+// --- GİRİŞ (klavye + fare + dokunmatik) ---
 function getTouchCoords(t) { const r = canvas.getBoundingClientRect(); return { x: (t.clientX - r.left) * (W / r.width), y: (t.clientY - r.top) * (H / r.height) }; }
 canvas.addEventListener('touchstart', e => { e.preventDefault(); initAudio(); if(state.phase !== 'playing') return; for(let t of e.changedTouches) { const c = getTouchCoords(t); if(c.x < W/2 && !state.touchControls.left.active) { state.touchControls.left = { active: true, startX: c.x, startY: c.y, dx: 0, dy: 0 }; } else if(c.x >= W/2 && !state.touchControls.right.active) { state.touchControls.right = { active: true, startX: c.x, startY: c.y, dx: 0, dy: 0 }; } } }, { passive: false });
 canvas.addEventListener('touchmove', e => { e.preventDefault(); if(state.phase !== 'playing') return; for(let t of e.changedTouches) { const c = getTouchCoords(t); if(state.touchControls.left.active && Math.hypot(c.x - state.touchControls.left.startX, c.y - state.touchControls.left.startY) < 100) { state.touchControls.left.dx = (c.x - state.touchControls.left.startX) / 50; state.touchControls.left.dy = (c.y - state.touchControls.left.startY) / 50; } if(state.touchControls.right.active) { state.touchControls.right.dx = (c.x - state.touchControls.right.startX) / 50; state.touchControls.right.dy = (c.y - state.touchControls.right.startY) / 50; } } }, { passive: false });
 canvas.addEventListener('touchend', e => { e.preventDefault(); if(state.phase !== 'playing') return; for(let t of e.changedTouches) { const c = getTouchCoords(t); if(c.x < W/2) state.touchControls.left = { active: false, startX: 0, startY: 0, dx: 0, dy: 0 }; else state.touchControls.right = { active: false, startX: 0, startY: 0, dx: 0, dy: 0 }; } }, { passive: false });
 
-document.addEventListener('keydown', e => { 
-  state.keys[e.key.toLowerCase()] = true; initAudio(); 
+document.addEventListener('keydown', e => {
+  state.keys[e.key.toLowerCase()] = true; initAudio();
   if (e.key.toLowerCase() === 'm') { if (!state.mapOpen) { state.mapOpen = true; if (!state.isMP && state.phase === 'playing') { state.phase = 'paused'; } } }
-  if (state.phase === 'playing') { 
-    let isAdmin10 = state.isAdmin && state.adminTier === 10;
-    if(e.key.toLowerCase() === 'r' && !state.player.reloading && !isAdmin10) { state.player.reloading = true; state.player.reloadStart = Date.now(); playSound('reload'); } 
-    if(e.key === 'Shift' && state.player.dashCd <= 0) { state.player.dashing = 10; state.player.dashCd = 60; } 
-    if(e.key.toLowerCase() === 'v' && !state.mapOpen) toggleShop(); 
-    if(e.key === 'Escape' && !state.mapOpen) pauseGame(); 
-  } else if(state.phase === 'paused') { 
-    if(e.key.toLowerCase() === 'v' || e.key === 'Escape') { if(document.getElementById('shopOverlay').classList.contains('active')) { closeOverlay('shopOverlay'); } else if(document.getElementById('pauseOverlay').classList.contains('active')) { resumeGame(); } } 
-  } 
+  if (state.phase === 'playing' && state.player) {
+    const k = e.key.toLowerCase();
+    if(k === 'r' && !state.player.reloading) { state.player.reloading = true; state.player.reloadStart = Date.now(); playSound('reload'); }
+    if(e.key === 'Shift' && state.player.dashCd <= 0) { state.player.dashing = 10; state.player.dashCd = state.player.dashCdMax; playSound('dash'); }
+    if(k === 'q') { const idx = state.ownedWeapons.indexOf(state.currentWeapon); const next = state.ownedWeapons[(idx + 1) % state.ownedWeapons.length]; switchWeapon(next); }
+    if(k >= '1' && k <= '8') { const wid = WEAPON_LIST[parseInt(k) - 1]; if(wid && state.ownedWeapons.includes(wid)) switchWeapon(wid); }
+    if(k === 'v' && !state.mapOpen) toggleShop();
+    if(e.key === 'Escape' && !state.mapOpen) pauseGame();
+  } else if(state.phase === 'paused') {
+    if(e.key.toLowerCase() === 'v' || e.key === 'Escape') { if(document.getElementById('shopOverlay').classList.contains('active')) { closeOverlay('shopOverlay'); } else if(document.getElementById('pauseOverlay').classList.contains('active')) { resumeGame(); } }
+  }
 });
-document.addEventListener('keyup', e => { 
-  state.keys[e.key.toLowerCase()] = false; 
+document.addEventListener('keyup', e => {
+  state.keys[e.key.toLowerCase()] = false;
   if (e.key.toLowerCase() === 'm') { if (state.mapOpen) { state.mapOpen = false; if (!state.isMP && state.phase === 'paused') { state.phase = 'playing'; } } }
 });
-
 canvas.addEventListener('mousemove', e => { const r = canvas.getBoundingClientRect(); state.mouse.x = (e.clientX - r.left) * (W / r.width); state.mouse.y = (e.clientY - r.top) * (H / r.height); });
 document.addEventListener('mousedown', (e) => { if(state.phase === 'playing' && e.target === canvas) { state.mouse.down = true; initAudio(); } });
 document.addEventListener('mouseup', () => { state.mouse.down = false; });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-renderShop(); renderBrawlers(); updateMenuUI();
-function loop() { if (state.phase === 'playing' || state.phase === 'gameover' || state.phase === 'paused') { update(); drawWorld(); } requestAnimationFrame(loop); }
+// --- BAŞLATMA ---
+loadGame();
+renderShop(); renderCharacters(); updateMenuUI();
+function loop() {
+  if (state.phase === 'playing' || state.phase === 'gameover' || state.phase === 'paused') { update(); drawWorld(); }
+  else if (state.phase === 'menu') { drawPreview(); }
+  requestAnimationFrame(loop);
+}
 loop();
 </script>
 </body>
